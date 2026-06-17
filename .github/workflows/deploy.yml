@@ -1,0 +1,94 @@
+name: Deploy to Firebase Hosting
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  checks: write
+  contents: read
+  deployments: write
+
+jobs:
+  build_and_deploy_admin:
+    name: Build & Deploy Admin Site
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: './package-lock.json'
+
+      - name: Install Dependencies
+        run: |
+          if [ -d "admin-site" ]; then
+            cd admin-site && npm ci
+          else
+            npm ci
+          fi
+
+      - name: Compile and Build admin-site
+        run: |
+          if [ -d "admin-site" ]; then
+            cd admin-site && npm run build
+          else
+            echo "Skipping admin-site folder build as it doesn't exist yet, building root-fallback client"
+            npm run build
+          fi
+
+      - name: Deploy to Firebase Hosting (Admin Site)
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: '${{ secrets.GITHUB_TOKEN }}'
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}'
+          target: admin-site
+          projectId: '${{ secrets.FIREBASE_PROJECT_ID }}'
+        env:
+          FIREBASE_CLI_PREVIEWS: hostingchannels
+
+  build_and_deploy_client:
+    name: Build & Deploy Client Site
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: './package-lock.json'
+
+      - name: Install Dependencies
+        run: |
+          if [ -d "client-site" ]; then
+            cd client-site && npm ci
+          else
+            npm ci
+          fi
+
+      - name: Compile and Build client-site
+        run: |
+          if [ -d "client-site" ]; then
+            cd client-site && npm run build
+          else
+            echo "Skipping client-site folder build as it doesn't exist yet, building root-fallback client"
+            npm run build
+          fi
+
+      - name: Deploy to Firebase Hosting (Client Site)
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: '${{ secrets.GITHUB_TOKEN }}'
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}'
+          target: client-site
+          projectId: '${{ secrets.FIREBASE_PROJECT_ID }}'
+        env:
+          FIREBASE_CLI_PREVIEWS: hostingchannels

@@ -1,0 +1,978 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light" dir="ltr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Sierra Estates 3.0 · New Cairo AI Real Estate</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Inter:wght@300;400;500;600;700;800&family=Cairo:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+/* ── TOKENS ──────────────────────────────────────────────────────────────── */
+:root{--gold:#C8961A;--gold-lt:#E9C176;--gold-dk:#A07614;--navy:#0D2035;--navy-lt:#173456;--emerald:#34D399;--red:#E63946;}
+[data-theme="dark"]{
+  --bg:#07111E;--bg-s:#0B1A2E;--bg-e:#0F2035;
+  --surf:rgba(255,255,255,.055);--bd:rgba(255,255,255,.08);--bd-s:rgba(255,255,255,.14);
+  --tx:#F0EDE5;--tx-m:rgba(240,237,229,.62);--tx-f:rgba(240,237,229,.32);
+  --hdr-bg:rgba(10,18,30,.9);--hdr-bd:rgba(200,150,26,.14);
+  --card-bg:#0F2035;--card-bd:rgba(255,255,255,.07);--card-sh:rgba(0,0,0,.25);
+}
+[data-theme="light"]{
+  --bg:#FAF8F4;--bg-s:#F2EDD8;--bg-e:#FFFFFF;
+  --surf:rgba(200,150,26,.05);--bd:rgba(200,150,26,.15);--bd-s:rgba(200,150,26,.30);
+  --tx:#0A1A2B;--tx-m:rgba(10,26,43,.58);--tx-f:rgba(10,26,43,.32);
+  --hdr-bg:rgba(250,249,245,.98);--hdr-bd:rgba(200,150,26,.22);
+  --card-bg:#FFFFFF;--card-bd:transparent;--card-sh:rgba(10,26,43,.07);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-font-smoothing:antialiased;}
+html{scroll-behavior:smooth;}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--tx);transition:background .3s,color .3s;}
+[dir="rtl"] body{font-family:'Cairo','Inter',sans-serif;}
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-thumb{background:rgba(200,150,26,.28);border-radius:2px;}
+a{text-decoration:none;color:inherit;}
+
+/* ── HEADER ──────────────────────────────────────────────────────────────── */
+.hdr{position:fixed;top:0;left:0;right:0;z-index:500;height:56px;display:flex;align-items:center;padding:0 22px;gap:12px;background:var(--hdr-bg);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);border-bottom:1px solid var(--hdr-bd);}
+.hdr-brand{display:flex;align-items:center;gap:9px;flex-shrink:0;text-decoration:none;}
+.hdr-name{font-family:'Cormorant Garamond',serif;font-size:13px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);}
+.hdr-center{flex:1;display:flex;justify-content:center;}
+.hdr-pill{display:flex;align-items:center;gap:2px;}
+.hdr-seg{display:flex;gap:2px;padding-right:5px;margin-right:3px;border-right:1px solid var(--bd);}
+.hdr-mode{padding:5px 12px;border-radius:0;border:none;border-bottom:1.5px solid transparent;font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:all .22s;background:transparent;color:var(--tx-m);font-family:inherit;}
+.hdr-mode.on{background:transparent;color:var(--gold);border-bottom-color:var(--gold);}
+.hdr-dd{position:relative;}
+.hdr-dd-btn{display:flex;align-items:center;gap:5px;padding:6px 11px;border:none;background:transparent;color:var(--tx-m);font-size:10px;font-weight:600;cursor:pointer;transition:color .18s;font-family:inherit;white-space:nowrap;}
+.hdr-dd-btn:hover,.hdr-dd-btn.open{color:var(--gold);}
+.hdr-dd-btn:last-of-type{border-right:none;}
+.hdr-cta{padding:6px 17px;border-radius:24px;border:1.5px solid rgba(200,150,26,.5);background:transparent;color:var(--gold);font-size:9px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;font-family:inherit;white-space:nowrap;margin-left:6px;transition:all .22s;}
+.hdr-cta:hover{background:rgba(200,150,26,.1);border-color:var(--gold);box-shadow:0 4px 18px rgba(200,150,26,.3);}
+.hdr-right{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+.hdr-link{color:var(--tx-f);font-size:8px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;transition:color .18s;cursor:pointer;}
+.hdr-link:hover{color:var(--gold);}
+.hdr-icon{width:30px;height:30px;border-radius:50%;background:var(--surf);border:1px solid var(--bd);color:var(--tx-m);cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;transition:all .2s;font-family:inherit;}
+.hdr-icon:hover{border-color:rgba(200,150,26,.4);color:var(--gold);}
+.hdr-drop{position:absolute;top:calc(100% + 12px);background:var(--bg-e);border:1px solid var(--bd-s);border-radius:14px;padding:7px;z-index:700;box-shadow:0 18px 56px var(--card-sh);max-height:340px;overflow-y:auto;min-width:220px;}
+.hdr-drop.right{right:0;}
+.fdd-search{width:100%;padding:7px 11px;background:var(--surf);border:1px solid var(--bd);border-radius:8px;font-size:11px;color:var(--tx);outline:none;font-family:inherit;margin-bottom:5px;}
+.fdd-search::placeholder{color:var(--tx-f);}
+.fdd-sep{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);opacity:.55;padding:6px 11px 3px;}
+.fdd-item{display:flex;align-items:center;gap:8px;padding:6px 11px;border-radius:8px;font-size:11px;color:var(--tx-m);cursor:pointer;background:none;border:none;width:100%;text-align:left;font-family:inherit;transition:background .12s;}
+.fdd-item:hover,.fdd-item.sel{background:rgba(200,150,26,.09);color:var(--gold);}
+[dir="rtl"] .fdd-item{text-align:right;}
+.chk{width:14px;height:14px;border-radius:4px;border:1.5px solid var(--bd-s);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:8px;transition:all .14s;}
+.fdd-item.sel .chk{background:rgba(200,150,26,.15);border-color:var(--gold);color:var(--gold);}
+@media(max-width:900px){.hdr-center{display:none;}}
+
+/* ── HERO ────────────────────────────────────────────────────────────────── */
+.hero{position:relative;height:100svh;min-height:640px;overflow:hidden;cursor:grab;}
+.hero.grabbing{cursor:grabbing;}
+.hero-bg{position:absolute;inset:-10%;width:120%;height:120%;background-size:cover;background-position:center;will-change:transform;transition:background-image .55s ease;}
+.hero-vignette{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(7,17,30,.12) 0%,rgba(7,17,30,.45) 40%,rgba(7,17,30,.97) 100%);}
+.hero-particles{position:absolute;inset:0;z-index:2;pointer-events:none;}
+.hero-content{position:relative;z-index:3;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;padding:0 24px 120px;text-align:center;gap:22px;}
+.hero-eyebrow{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.32em;color:var(--gold-lt);text-transform:uppercase;animation:fadeUp .9s both;}
+.hero-title{font-family:'Cormorant Garamond',serif;font-size:clamp(46px,7.2vw,88px);font-weight:300;color:#fff;line-height:1.02;letter-spacing:-.015em;animation:fadeUp .9s .1s both;}
+.hero-title em{font-style:italic;font-weight:400;background:linear-gradient(135deg,var(--gold),var(--gold-lt));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
+.hero-sub{font-size:13px;font-weight:300;color:rgba(255,255,255,.45);letter-spacing:.05em;animation:fadeUp .9s .22s both;}
+.hero-stats{display:grid;grid-template-columns:repeat(4,1fr);background:rgba(7,17,30,.6);backdrop-filter:blur(22px);border:1px solid rgba(200,150,26,.16);border-radius:18px;padding:18px 24px;max-width:560px;width:100%;animation:fadeUp .9s .34s both;}
+.hero-stat+.hero-stat{border-left:1px solid rgba(200,150,26,.1);}
+.hero-stat-v{font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:700;background:linear-gradient(135deg,var(--gold-lt),var(--gold));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;line-height:1;}
+.hero-stat-l{font-size:8px;color:rgba(255,255,255,.28);text-transform:uppercase;letter-spacing:.12em;margin-top:4px;}
+.scene-thumbs{position:absolute;bottom:28px;left:50%;transform:translateX(-50%);display:flex;gap:10px;z-index:4;animation:fadeUp .9s .46s both;}
+.scene-thumb{width:72px;height:48px;border-radius:10px;overflow:hidden;border:2px solid rgba(255,255,255,.15);cursor:pointer;transition:all .3s;flex-shrink:0;}
+.scene-thumb.active{border-color:var(--gold);box-shadow:0 0 16px rgba(200,150,26,.5);}
+.scene-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+
+/* ── SECTION BASE ────────────────────────────────────────────────────────── */
+.sec{padding:90px 24px;max-width:1320px;margin:0 auto;}
+.sec-eyebrow{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.28em;color:var(--gold);text-transform:uppercase;margin-bottom:9px;}
+.sec-title{font-family:'Cormorant Garamond',serif;font-size:clamp(32px,4vw,58px);font-weight:400;color:var(--tx);line-height:1.06;margin-bottom:12px;}
+.sec-sub{font-size:13px;color:var(--tx-m);line-height:1.8;margin-bottom:42px;}
+/* Scroll reveal */
+.rv{opacity:0;transform:translateY(26px);transition:opacity .75s cubic-bezier(.16,1,.3,1),transform .75s cubic-bezier(.16,1,.3,1);}
+.rv.in{opacity:1;transform:none;}
+
+/* ── VIRTUAL TOUR ────────────────────────────────────────────────────────── */
+.tour-dark{background:#040c16;}
+.tour-viewport{height:72vh;min-height:500px;position:relative;overflow:hidden;user-select:none;}
+.tour-badge{position:absolute;top:18px;left:20px;background:rgba(4,12,22,.92);border:1px solid rgba(200,150,26,.28);backdrop-filter:blur(12px);padding:11px 18px;border-radius:14px;z-index:10;pointer-events:none;}
+.tour-badge .rname{font-family:'Cormorant Garamond',serif;font-size:22px;color:#fff;font-weight:400;line-height:1;}
+.tour-badge .rof{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--gold);margin-top:4px;letter-spacing:.18em;text-transform:uppercase;}
+.tour-hint{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(4,12,22,.78);border:1px solid rgba(200,150,26,.18);color:rgba(255,255,255,.68);padding:10px 20px;border-radius:24px;font-size:11.5px;pointer-events:none;z-index:10;white-space:nowrap;animation:fadeUp .6s both;}
+.tour-ctrls{position:absolute;top:18px;right:20px;display:flex;gap:7px;z-index:10;}
+.tour-btn{width:40px;height:40px;background:rgba(4,12,22,.88);border:1px solid rgba(200,150,26,.22);border-radius:11px;color:rgba(255,255,255,.72);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;transition:all .2s;font-family:inherit;}
+.tour-btn:hover{border-color:var(--gold);color:var(--gold-lt);}
+.tour-dpad{position:absolute;right:20px;top:50%;transform:translateY(-50%);display:grid;grid-template-columns:repeat(3,36px);grid-template-rows:repeat(3,36px);gap:4px;z-index:10;}
+.tour-dpad-btn{width:36px;height:36px;background:rgba(4,12,22,.82);border:1px solid rgba(200,150,26,.18);border-radius:9px;color:rgba(255,255,255,.6);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;transition:all .2s;font-family:inherit;}
+.tour-dpad-btn:hover{border-color:var(--gold);color:var(--gold-lt);}
+.tour-dpad-center{width:36px;height:36px;background:rgba(200,150,26,.08);border:1px solid rgba(200,150,26,.12);border-radius:9px;}
+.tour-loading{position:absolute;inset:0;background:rgba(4,12,22,.9);display:flex;align-items:center;justify-content:center;z-index:20;}
+.tour-load-inner{text-align:center;}
+.tour-load-bar{width:130px;height:2px;background:rgba(200,150,26,.12);border-radius:1px;overflow:hidden;margin:10px auto 0;}
+.tour-load-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold-lt));border-radius:1px;animation:shimmer 1.4s ease-in-out infinite;background-size:200%;}
+.tour-pills{display:flex;gap:10px;padding:18px 24px;background:#040c16;overflow-x:auto;justify-content:center;border-top:1px solid rgba(200,150,26,.09);scrollbar-width:none;}
+.tour-pills::-webkit-scrollbar{display:none;}
+.tour-pill{padding:9px 22px;border-radius:30px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:rgba(255,255,255,.52);font-size:11px;font-weight:600;cursor:pointer;transition:all .25s;white-space:nowrap;font-family:inherit;}
+.tour-pill.active{border-color:var(--gold);background:rgba(200,150,26,.1);color:var(--gold-lt);}
+
+/* ── LISTINGS ────────────────────────────────────────────────────────────── */
+.lst-bg{background:var(--bg-s);}
+.l-toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:28px;}
+.l-select{background:var(--bg-e);border:1px solid var(--bd);border-radius:10px;padding:8px 14px;font-size:11px;color:var(--tx);outline:none;cursor:pointer;font-family:inherit;transition:border-color .2s;}
+.l-select:hover{border-color:rgba(200,150,26,.35);}
+.l-count{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--tx-f);}
+.vbtn{width:34px;height:34px;border:1px solid var(--bd);background:var(--bg-e);border-radius:9px;color:var(--tx-m);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:all .2s;}
+.vbtn.on{background:rgba(200,150,26,.09);border-color:var(--gold);color:var(--gold);}
+.l-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:18px;}
+@media(max-width:1500px){.l-grid{grid-template-columns:repeat(4,1fr);}}
+@media(max-width:1100px){.l-grid{grid-template-columns:repeat(3,1fr);}}
+@media(max-width:768px){.l-grid{grid-template-columns:repeat(2,1fr);gap:14px;}}
+@media(max-width:480px){.l-grid{grid-template-columns:1fr;}}
+.l-list .lc{display:flex;}
+.l-list .lc-img{width:220px;flex-shrink:0;height:auto;}
+.l-list .lc-body{display:flex;align-items:center;gap:20px;flex:1;flex-wrap:wrap;padding:16px;}
+
+/* ── LISTING CARD ────────────────────────────────────────────────────────── */
+.lc{background:var(--card-bg);border:1px solid var(--card-bd);border-radius:16px;overflow:hidden;transition:all .38s cubic-bezier(.16,1,.3,1);cursor:pointer;box-shadow:0 1px 6px var(--card-sh);}
+.lc:hover{transform:translateY(-9px) scale(1.013);border-color:rgba(200,150,26,.36);box-shadow:0 24px 60px rgba(0,0,0,.12),0 0 0 1px rgba(200,150,26,.1);}
+.lc-img{position:relative;height:178px;overflow:hidden;}
+.lc-img img{width:100%;height:100%;object-fit:cover;transition:transform .55s ease;display:block;}
+.lc:hover .lc-img img{transform:scale(1.08);}
+.lc-ai{position:absolute;top:10px;right:10px;background:rgba(7,17,30,.88);border:1px solid rgba(200,150,26,.44);color:var(--gold-lt);padding:3px 9px;border-radius:20px;font-size:7.5px;font-weight:700;font-family:'JetBrains Mono',monospace;letter-spacing:.06em;}
+.lc-heart{position:absolute;top:10px;left:10px;width:30px;height:30px;background:rgba(7,17,30,.65);border:1px solid rgba(255,255,255,.18);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer;transition:all .2s;opacity:0;}
+.lc:hover .lc-heart,.lc-heart.saved{opacity:1;}
+.lc-heart.saved{background:rgba(230,57,70,.15);border-color:var(--red);}
+.lc-view{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(200,150,26,.06);opacity:0;transition:opacity .28s;}
+.lc:hover .lc-view{opacity:1;}
+.lc-view span{background:linear-gradient(135deg,var(--gold),var(--gold-lt));color:#07111E;padding:8px 22px;border-radius:22px;font-size:10.5px;font-weight:700;letter-spacing:.08em;}
+.lc-body{padding:14px 16px;}
+.lc-cmp{font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--gold);text-transform:uppercase;letter-spacing:.15em;margin-bottom:5px;font-weight:700;}
+.lc-title{font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:500;color:var(--tx);margin-bottom:10px;line-height:1.22;}
+.lc-specs{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-bottom:10px;}
+.lc-spec{text-align:center;background:var(--surf);border:1px solid var(--bd);border-radius:8px;padding:6px 4px;}
+.lc-sv{font-weight:700;font-size:11.5px;color:var(--tx);display:block;}
+.lc-sl{font-size:7px;color:var(--tx-f);text-transform:uppercase;letter-spacing:.06em;}
+.lc-price{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:800;color:var(--gold);margin-bottom:8px;}
+.lc-bar{height:2px;background:var(--bd);border-radius:1px;overflow:hidden;}
+.lc-bar-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold-lt));border-radius:1px;transition:width 1.1s ease .1s;}
+.lc:hover .lc-bar-fill{width:100%!important;}
+
+/* ── INTELLIGENCE OS ─────────────────────────────────────────────────────── */
+.intel-bg{background:#040c16;}
+.intel-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:14px;margin-bottom:14px;}
+@media(max-width:960px){.intel-grid{grid-template-columns:1fr;}}
+.ic{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:16px;overflow:hidden;transition:border-color .28s;}
+.ic:hover{border-color:rgba(200,150,26,.18);}
+.ic-hd{display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.055);}
+.ic-dot{width:6px;height:6px;border-radius:50%;background:var(--emerald);flex-shrink:0;animation:pulse-dot 2.4s infinite;}
+.ic-lbl{font-family:'JetBrains Mono',monospace;font-size:7.5px;letter-spacing:.22em;text-transform:uppercase;color:rgba(255,255,255,.32);}
+.feat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+@media(max-width:860px){.feat-grid{grid-template-columns:repeat(2,1fr);}}
+.feat-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.065);border-radius:14px;padding:20px;text-decoration:none;display:block;position:relative;transition:all .3s;}
+.feat-card:hover{background:rgba(200,150,26,.07);border-color:rgba(200,150,26,.26);transform:translateY(-3px);}
+.feat-arrow{position:absolute;top:16px;right:16px;color:rgba(255,255,255,.18);font-size:12px;transition:all .28s;}
+.feat-card:hover .feat-arrow{color:var(--gold);transform:translate(2px,-2px);}
+
+/* ── AI HUB ──────────────────────────────────────────────────────────────── */
+.ai-bg{background:var(--bg);}
+.ai-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;}
+@media(max-width:900px){.ai-grid{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:580px){.ai-grid{grid-template-columns:1fr;}}
+.ai-card{background:var(--card-bg);border:1px solid var(--card-bd);border-radius:18px;padding:28px;transition:all .38s cubic-bezier(.16,1,.3,1);cursor:pointer;position:relative;overflow:hidden;display:block;}
+.ai-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--gold),var(--gold-lt));transform:scaleX(0);transform-origin:left;transition:transform .42s cubic-bezier(.16,1,.3,1);}
+.ai-card:hover{border-color:rgba(200,150,26,.32);transform:translateY(-6px);box-shadow:0 18px 48px rgba(0,0,0,.09);}
+.ai-card:hover::before{transform:scaleX(1);}
+.ai-ico{width:52px;height:52px;border-radius:14px;background:rgba(200,150,26,.09);border:1px solid rgba(200,150,26,.18);display:flex;align-items:center;justify-content:center;font-size:24px;margin-bottom:18px;transition:transform .3s;}
+.ai-card:hover .ai-ico{transform:scale(1.07);}
+.ai-card h3{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:400;color:var(--tx);margin-bottom:9px;line-height:1.1;}
+.ai-card p{font-size:12px;color:var(--tx-m);line-height:1.72;margin-bottom:16px;}
+.ai-arrow{font-family:'JetBrains Mono',monospace;font-size:8.5px;font-weight:700;color:var(--gold);letter-spacing:.12em;text-transform:uppercase;transition:letter-spacing .3s;}
+.ai-card:hover .ai-arrow{letter-spacing:.2em;}
+
+/* ── WHY SIERRA ──────────────────────────────────────────────────────────── */
+.why-bg{background:var(--bg-s);}
+.why-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;}
+@media(max-width:760px){.why-grid{grid-template-columns:1fr;}}
+.why-card{background:var(--card-bg);border:1px solid var(--card-bd);border-radius:18px;padding:32px;position:relative;overflow:hidden;transition:all .3s;}
+.why-card::after{content:attr(data-n);position:absolute;bottom:-10px;right:18px;font-family:'Cormorant Garamond',serif;font-size:110px;font-weight:300;color:var(--gold);opacity:.035;line-height:1;pointer-events:none;}
+.why-card:hover{border-color:rgba(200,150,26,.22);transform:translateY(-3px);box-shadow:0 12px 36px var(--card-sh);}
+.why-card h3{font-family:'Cormorant Garamond',serif;font-size:24px;color:var(--tx);margin-bottom:12px;line-height:1.12;}
+.why-card p{font-size:12px;color:var(--tx-m);line-height:1.8;}
+
+/* ── MAP ─────────────────────────────────────────────────────────────────── */
+.map-bg{background:#040c16;}
+.map-frame{border:1px solid rgba(200,150,26,.14);border-radius:20px;overflow:hidden;display:grid;grid-template-columns:280px 1fr 248px;height:590px;}
+@media(max-width:1100px){.map-frame{grid-template-columns:1fr;height:auto;border-radius:14px;}}
+.map-filter{background:rgba(255,255,255,.035);border-right:1px solid rgba(255,255,255,.065);padding:16px 14px;overflow-y:auto;display:flex;flex-direction:column;gap:16px;}
+.mf-lbl{font-family:'JetBrains Mono',monospace;font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.22em;color:var(--gold);margin-bottom:8px;}
+.prop-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.prop-btn{border:1.5px solid rgba(255,255,255,.08);border-radius:10px;overflow:hidden;cursor:pointer;transition:all .2s;background:none;text-align:left;}
+.prop-btn.sel{border-color:var(--gold);}
+.prop-btn img{width:100%;height:44px;object-fit:cover;display:block;}
+.prop-btn span{display:block;font-size:9px;font-weight:600;color:rgba(255,255,255,.48);padding:4px 6px;}
+.prop-btn.sel span{color:var(--gold);}
+.brow{display:flex;gap:5px;flex-wrap:wrap;}
+.bchip{padding:5px 10px;border-radius:20px;border:1px solid rgba(255,255,255,.09);background:none;color:rgba(255,255,255,.45);font-size:9.5px;cursor:pointer;transition:all .2s;font-family:inherit;}
+.bchip.on{border-color:var(--gold);background:rgba(200,150,26,.1);color:var(--gold);}
+.map-center{position:relative;overflow:hidden;}
+#lmap{height:100%;width:100%;min-height:400px;}
+.map-zoom{position:absolute;bottom:16px;right:16px;z-index:1000;display:flex;flex-direction:column;gap:4px;}
+.mzb{width:36px;height:36px;background:rgba(4,12,22,.92);border:1px solid rgba(200,150,26,.3);border-radius:9px;color:var(--gold-lt);font-size:18px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;font-family:inherit;}
+.mzb:hover{background:rgba(200,150,26,.16);}
+.map-right{background:rgba(255,255,255,.025);border-left:1px solid rgba(255,255,255,.065);overflow-y:auto;}
+.mr-head{padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.065);display:flex;align-items:center;justify-content:space-between;}
+.ml-item{padding:13px 14px;border-bottom:1px solid rgba(255,255,255,.045);cursor:pointer;transition:background .18s;}
+.ml-item:hover{background:rgba(200,150,26,.055);}
+.ml-name{font-weight:600;font-size:12px;color:rgba(255,255,255,.82);margin-bottom:3px;}
+.ml-price{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--gold);}
+.ml-meta{font-size:9px;color:rgba(255,255,255,.28);margin-top:2px;}
+.ml-ai{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--emerald);float:right;}
+/* Compound modal */
+.cpd-ov{position:fixed;inset:0;z-index:3000;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(0,0,0,.65);backdrop-filter:blur(8px);}
+.cpd-box{background:var(--bg-e);border:1px solid var(--bd-s);border-radius:20px;max-width:760px;width:100%;max-height:84vh;overflow:hidden;display:flex;flex-direction:column;animation:slideUp .3s cubic-bezier(.16,1,.3,1);}
+.cpd-hd{padding:20px 24px;border-bottom:1px solid var(--bd);display:flex;align-items:flex-start;justify-content:space-between;}
+.cpd-tabs{display:flex;gap:8px;padding:12px 24px;border-bottom:1px solid var(--bd);}
+.cpd-tab{padding:7px 18px;border-radius:22px;border:1px solid var(--bd);background:none;color:var(--tx-m);font-size:11px;font-weight:600;cursor:pointer;transition:all .2s;font-family:inherit;}
+.cpd-tab.on{background:rgba(200,150,26,.1);border-color:var(--gold);color:var(--gold);}
+.cpd-body{overflow-y:auto;padding:18px 24px;flex:1;}
+.dt{width:100%;border-collapse:collapse;font-size:11.5px;}
+.dt th{padding:9px 10px;text-align:left;font-family:'JetBrains Mono',monospace;font-size:7.5px;text-transform:uppercase;letter-spacing:.14em;color:var(--gold);border-bottom:1px solid var(--bd-s);}
+.dt td{padding:9px 10px;border-bottom:1px solid var(--bd);color:var(--tx-m);}
+.dt tr:hover td{background:rgba(200,150,26,.03);}
+
+/* ── QR / FOOTER ─────────────────────────────────────────────────────────── */
+.qr-bg{background:#040c16;}
+.qr-inner{max-width:640px;margin:0 auto;display:flex;flex-direction:column;gap:13px;}
+.qr-row{display:grid;grid-template-columns:1fr 1fr;gap:13px;}
+@media(max-width:500px){.qr-row{grid-template-columns:1fr;}}
+.qr-inp{background:rgba(255,255,255,.07);border:1px solid rgba(200,150,26,.18);border-radius:12px;padding:12px 16px;font-size:13px;color:#fff;outline:none;font-family:inherit;transition:border-color .2s;width:100%;}
+.qr-inp::placeholder{color:rgba(255,255,255,.32);}
+.qr-inp:focus{border-color:var(--gold);}
+.qr-btn{background:linear-gradient(135deg,var(--gold),var(--gold-lt));color:#07111E;border:none;border-radius:12px;padding:14px 36px;font-size:13px;font-weight:700;cursor:pointer;transition:all .28s;font-family:inherit;align-self:flex-start;}
+.qr-btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(200,150,26,.36);}
+.ftr{background:#030a12;border-top:1px solid rgba(200,150,26,.09);padding:62px 24px 28px;}
+.ftr-grid{max-width:1320px;margin:0 auto;display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:48px;margin-bottom:44px;}
+@media(max-width:900px){.ftr-grid{grid-template-columns:1fr 1fr;gap:32px;}}
+@media(max-width:540px){.ftr-grid{grid-template-columns:1fr;}}
+.ftr-link{display:block;font-size:12px;color:rgba(255,255,255,.36);margin-bottom:9px;transition:color .18s;}
+.ftr-link:hover{color:var(--gold-lt);}
+.ftr-col-t{font-family:'JetBrains Mono',monospace;font-size:7.5px;letter-spacing:.22em;text-transform:uppercase;color:rgba(200,150,26,.42);margin-bottom:16px;}
+
+/* ── CHAT FAB ────────────────────────────────────────────────────────────── */
+.fab-wrap{position:fixed;bottom:28px;right:28px;z-index:1000;}
+.fab-btn{width:58px;height:58px;background:linear-gradient(135deg,var(--gold),var(--gold-lt));border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:22px;color:#07111E;box-shadow:0 8px 28px rgba(200,150,26,.44);transition:all .3s;animation:fab-pulse 3.5s ease-in-out infinite;}
+.fab-btn:hover{transform:scale(1.1);}
+.fab-badge{position:absolute;top:-2px;right:-2px;background:var(--emerald);border:2px solid #040c16;border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:800;color:#040c16;font-family:'JetBrains Mono',monospace;}
+.chat-panel{position:fixed;bottom:102px;right:28px;width:370px;background:var(--bg-e);border:1px solid var(--bd-s);border-radius:22px;box-shadow:0 24px 70px rgba(0,0,0,.22);z-index:999;overflow:hidden;animation:slideUp .35s cubic-bezier(.16,1,.3,1);}
+.cp-hd{background:var(--navy);padding:14px 18px;display:flex;align-items:center;gap:12px;}
+.cp-dot{width:8px;height:8px;border-radius:50%;background:var(--emerald);animation:pulse-dot 2.4s infinite;}
+.cp-msgs{height:280px;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;}
+.cp-ai{padding:10px 14px;border-radius:4px 14px 14px 14px;font-size:12px;line-height:1.6;background:var(--surf);border:1px solid var(--bd);color:var(--tx);max-width:90%;}
+.cp-user{padding:10px 14px;border-radius:14px 4px 14px 14px;font-size:12px;background:linear-gradient(135deg,var(--gold),var(--gold-lt));color:#07111E;align-self:flex-end;max-width:90%;}
+.cp-chips{display:flex;gap:6px;padding:0 14px 10px;flex-wrap:wrap;}
+.cp-chip{padding:5px 12px;border-radius:20px;border:1px solid rgba(200,150,26,.26);background:rgba(200,150,26,.07);color:var(--gold);font-size:9.5px;cursor:pointer;transition:all .18s;font-family:inherit;}
+.cp-chip:hover{background:rgba(200,150,26,.16);}
+.cp-foot{display:flex;gap:8px;padding:11px 14px;border-top:1px solid var(--bd);}
+.cp-inp{flex:1;background:var(--surf);border:1px solid var(--bd);border-radius:10px;padding:9px 13px;font-size:12px;color:var(--tx);outline:none;font-family:inherit;}
+.cp-inp:focus{border-color:var(--gold);}
+.cp-send{background:linear-gradient(135deg,var(--gold),var(--gold-lt));border:none;border-radius:10px;width:36px;height:36px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;color:#07111E;flex-shrink:0;}
+
+/* ── LEAFLET ─────────────────────────────────────────────────────────────── */
+.leaflet-container{background:#0a1520!important;}
+.leaflet-control-attribution{display:none!important;}
+.leaflet-tile-pane{filter:hue-rotate(200deg) saturate(.5) brightness(.72);}
+.leaflet-control-zoom{display:none!important;}
+
+/* ── KEYFRAMES ───────────────────────────────────────────────────────────── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulse-dot{0%,100%{opacity:1}50%{opacity:.28}}
+@keyframes fab-pulse{0%,100%{box-shadow:0 8px 28px rgba(200,150,26,.44)}50%{box-shadow:0 8px 44px rgba(200,150,26,.72)}}
+@keyframes dotPulse{0%,80%,100%{transform:scale(0)}40%{transform:scale(1)}}
+@keyframes shimmer{0%{background-position:0%}100%{background-position:200%}}
+@keyframes markerIn{from{opacity:0;transform:scale(.5) translateY(10px)}to{opacity:1;transform:scale(1) translateY(0)}}
+
+/* ── LUXURY GLOBAL REFINEMENTS ─────────────────────────────────────── */
+.hdr-name{letter-spacing:.28em;}
+.sec-eyebrow{letter-spacing:.34em;}
+.hero-eyebrow{letter-spacing:.36em;}
+.hdr-cta{letter-spacing:.12em;padding:7px 20px;font-size:9.5px;}
+.hdr-cta:hover{background:rgba(200,150,26,.12);box-shadow:0 4px 16px rgba(200,150,26,.28);}
+
+/* Smart Request slide panel */
+.smart-panel{position:fixed;top:56px;left:0;right:0;z-index:490;background:var(--bg-e);border-bottom:1px solid var(--bd-s);box-shadow:0 18px 56px rgba(0,0,0,.18);padding:18px 24px 22px;animation:slideDown .32s cubic-bezier(.16,1,.3,1);}
+@keyframes slideDown{from{opacity:0;transform:translateY(-18px)}to{opacity:1;transform:translateY(0)}}
+.sp-inner{max-width:1320px;margin:0 auto;display:grid;grid-template-columns:1fr 1.2fr auto;gap:12px;align-items:end;}
+@media(max-width:900px){.sp-inner{grid-template-columns:1fr 1fr;}}
+.sp-lbl{font-family:'JetBrains Mono',monospace;font-size:7.5px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);margin-bottom:6px;}
+.sp-inp{width:100%;padding:10px 14px;background:var(--surf);border:1.5px solid var(--bd-s);border-radius:10px;font-size:12px;color:var(--tx);outline:none;font-family:inherit;transition:border-color .2s;}
+.sp-inp:focus{border-color:var(--gold);}
+.sp-select{width:100%;padding:10px 14px;background:var(--surf);border:1.5px solid var(--bd-s);border-radius:10px;font-size:12px;color:var(--tx);outline:none;font-family:inherit;cursor:pointer;transition:border-color .2s;}
+.sp-select:focus{border-color:var(--gold);}
+.sp-btn{background:linear-gradient(135deg,var(--gold),var(--gold-lt));color:#07111E;border:none;border-radius:10px;padding:11px 26px;font-size:11px;font-weight:800;letter-spacing:.1em;cursor:pointer;font-family:inherit;white-space:nowrap;transition:all .22s;}
+.sp-btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(200,150,26,.44);}
+
+/* ── LIGHT MODE REDESIGN (editorial luxury) ────────────────────────── */
+[data-theme="light"] body{
+  background-image: radial-gradient(ellipse 110% 55% at 50% -5%, rgba(200,150,26,.09) 0%, transparent 52%);
+  background-attachment:fixed;
+}
+[data-theme="light"] .hdr{
+  box-shadow:0 2px 32px rgba(10,26,43,.09),0 0 0 1px rgba(200,150,26,.1);
+  border-bottom:none;
+  background:rgba(250,249,245,.98);
+}
+[data-theme="light"] .hdr-pill{background:transparent;border:none;box-shadow:none;}
+[data-theme="light"] .hdr-mode{color:var(--tx-m);}
+[data-theme="light"] .hdr-mode.on{color:#07111E;}
+[data-theme="light"] .hdr-dd-btn{color:var(--tx-m);}
+[data-theme="light"] .hdr-dd-btn:hover,[data-theme="light"] .hdr-dd-btn.open{color:var(--gold-dk);}
+/* Cards — shadow-first, no border */
+[data-theme="light"] .lc{
+  border:none;
+  box-shadow:0 4px 28px rgba(10,26,43,.07),0 0 0 1px rgba(200,150,26,.09);
+  border-radius:16px;
+}
+[data-theme="light"] .lc:hover{
+  box-shadow:0 24px 64px rgba(10,26,43,.15),0 0 0 1.5px rgba(200,150,26,.32);
+  border:none;
+}
+[data-theme="light"] .lc-spec{
+  background:rgba(200,150,26,.05);
+  border:1px solid rgba(200,150,26,.13);
+}
+/* AI cards */
+[data-theme="light"] .ai-card{
+  border:none;
+  background:#FFFFFF;
+  box-shadow:0 4px 28px rgba(10,26,43,.06),0 0 0 1px rgba(200,150,26,.09);
+}
+[data-theme="light"] .ai-card:hover{
+  box-shadow:0 18px 52px rgba(10,26,43,.12),0 0 0 1.5px rgba(200,150,26,.28);
+}
+[data-theme="light"] .ai-ico{background:rgba(200,150,26,.07);border-color:rgba(200,150,26,.22);}
+/* Why cards — editorial top-border accent */
+[data-theme="light"] .why-card{
+  border:none;
+  border-top:2.5px solid rgba(200,150,26,.25);
+  box-shadow:0 4px 24px rgba(10,26,43,.06);
+  border-radius:0 0 16px 16px;
+}
+[data-theme="light"] .why-card:hover{
+  border-top-color:var(--gold);
+  box-shadow:0 14px 44px rgba(10,26,43,.11);
+}
+/* Sections backgrounds */
+[data-theme="light"] .lst-bg{background:linear-gradient(175deg,#F2EDD8 0%,#FAF8F4 60%);}
+[data-theme="light"] .ai-bg{background:#F7F4ED;}
+[data-theme="light"] .why-bg{background:#FFFFFF;}
+[data-theme="light"] .smart-panel{box-shadow:0 8px 40px rgba(10,26,43,.14);}
+/* Feat cards */
+[data-theme="light"] .feat-card{
+  background:#FFFFFF;border:none;
+  box-shadow:0 3px 20px rgba(10,26,43,.06),0 0 0 1px rgba(200,150,26,.09);
+}
+[data-theme="light"] .feat-card:hover{
+  background:rgba(200,150,26,.04);
+  box-shadow:0 12px 36px rgba(10,26,43,.1),0 0 0 1px rgba(200,150,26,.22);
+}
+[data-theme="light"] .feat-arrow{color:rgba(10,26,43,.22);}
+[data-theme="light"] .feat-card:hover .feat-arrow{color:var(--gold-dk);}
+/* Dropdowns */
+[data-theme="light"] .hdr-drop{box-shadow:0 18px 56px rgba(10,26,43,.14);}
+/* Scrollbar */
+[data-theme="light"] ::-webkit-scrollbar-thumb{background:rgba(200,150,26,.28);}
+/* Section eyebrow */
+[data-theme="light"] .sec-eyebrow{color:var(--gold-dk);}
+/* Listing toolbar */
+[data-theme="light"] .l-select{
+  box-shadow:0 1px 8px rgba(10,26,43,.04);
+  border-color:rgba(200,150,26,.15);
+}
+[data-theme="light"] .vbtn{border-color:rgba(200,150,26,.15);}
+[data-theme="light"] .vbtn.on{background:rgba(200,150,26,.08);}
+/* Chat panel */
+[data-theme="light"] .chat-panel{box-shadow:0 24px 70px rgba(10,26,43,.18);}
+/* Compound modal */
+[data-theme="light"] .cpd-box{box-shadow:0 32px 96px rgba(10,26,43,.18);}
+
+/* ── TOUR SECTION ── slightly lighter for readability ─────────────── */
+.tour-dark{background:linear-gradient(180deg,#0d1e30 0%,#07111e 40%);}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel" data-presets="react">
+const {useState,useEffect,useRef,useMemo,useCallback}=React;
+
+/* ═══════════════════════════════ DATA ═══════════════════════════════════ */
+const ALL_COMPOUNDS=[
+  'Hyde Park','Mountain View iCity','Mountain View Hyde Park',
+  'Uptown Cairo','Mivida','Madinaty','Eastown','El Shorouk',
+  'Palm Hills NC','Villette','Fifth Square','SODIC East',
+  'Taj City','Bloomfields','Sarai','Katameya Heights',
+  'Al Rehab','Zed East','La Vista City'
+];
+const SCENES=[
+  {bg:'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1600&q=80',thumb:'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=160&q=70',lbl:'Exterior'},
+  {bg:'https://images.unsplash.com/photo-1613977257363-707ba9348227?w=1600&q=80',thumb:'https://images.unsplash.com/photo-1613977257363-707ba9348227?w=160&q=70',lbl:'Living'},
+  {bg:'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1600&q=80',thumb:'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=160&q=70',lbl:'Garden'},
+  {bg:'https://images.unsplash.com/photo-1575517111839-3a3843ee7f5d?w=1600&q=80',thumb:'https://images.unsplash.com/photo-1575517111839-3a3843ee7f5d?w=160&q=70',lbl:'Pool'},
+  {bg:'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=1600&q=80',thumb:'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=160&q=70',lbl:'Night'},
+];
+const TOUR_ROOMS=[
+  {name:'Living Area',   bg:'https://images.unsplash.com/photo-1600210492493-0946911123ea?w=3200&q=85'},
+  {name:'Master Suite',  bg:'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=3200&q=85'},
+  {name:'Private Garden',bg:'https://images.unsplash.com/photo-1598228723793-52759bba239c?w=3200&q=85'},
+  {name:'Pool Deck',     bg:'https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=3200&q=85'},
+  {name:'Sky Terrace',   bg:'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=3200&q=85'},
+  {name:'Villa Exterior',bg:'https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?w=3200&q=85'},
+];
+const IMGS=['https://images.unsplash.com/photo-1613977257363-707ba9348227?w=600&q=75','https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=600&q=75','https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?w=600&q=75','https://images.unsplash.com/photo-1600210492493-0946911123ea?w=600&q=75','https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=600&q=75','https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=600&q=75','https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=600&q=75','https://images.unsplash.com/photo-1598228723793-52759bba239c?w=600&q=75','https://images.unsplash.com/photo-1575517111839-3a3843ee7f5d?w=600&q=75'];
+const ALL_LISTINGS=[
+  {id:1,cmp:'Hyde Park',title:'5-Bed Grand Villa',type:'Villa',beds:5,bath:6,area:420,price:35000000,priceStr:'EGP 35M',rentStr:'$11,500/mo',ai:9.8,img:0},
+  {id:2,cmp:'Hyde Park',title:'4-Bed Twin House',type:'Twin House',beds:4,bath:4,area:280,price:22000000,priceStr:'EGP 22M',rentStr:'$7,200/mo',ai:9.5,img:1},
+  {id:3,cmp:'Hyde Park',title:'3-Bed Apartment',type:'Apartment',beds:3,bath:2,area:165,price:12500000,priceStr:'EGP 12.5M',rentStr:'$4,100/mo',ai:9.2,img:2},
+  {id:4,cmp:'Mountain View iCity',title:'6-Bed Mega Villa',type:'Villa',beds:6,bath:7,area:550,price:42000000,priceStr:'EGP 42M',rentStr:'$13,800/mo',ai:9.6,img:3},
+  {id:5,cmp:'Mountain View iCity',title:'Penthouse Suite',type:'Penthouse',beds:4,bath:4,area:320,price:18000000,priceStr:'EGP 18M',rentStr:'$5,900/mo',ai:9.4,img:4},
+  {id:6,cmp:'Mivida',title:'3-Bed Garden Villa',type:'Villa',beds:3,bath:3,area:195,price:8500000,priceStr:'EGP 8.5M',rentStr:'$2,800/mo',ai:9.1,img:5},
+  {id:7,cmp:'Mivida',title:'2-Bed Apartment',type:'Apartment',beds:2,bath:2,area:110,price:5200000,priceStr:'EGP 5.2M',rentStr:'$1,700/mo',ai:8.9,img:6},
+  {id:8,cmp:'Uptown Cairo',title:'4-Bed Hilltop Villa',type:'Villa',beds:4,bath:5,area:360,price:28000000,priceStr:'EGP 28M',rentStr:'$9,200/mo',ai:9.4,img:7},
+  {id:9,cmp:'Uptown Cairo',title:'3-Bed Duplex',type:'Duplex',beds:3,bath:3,area:220,price:16500000,priceStr:'EGP 16.5M',rentStr:'$5,400/mo',ai:9.2,img:8},
+  {id:10,cmp:'Madinaty',title:'3-Bed Apartment',type:'Apartment',beds:3,bath:2,area:165,price:4800000,priceStr:'EGP 4.8M',rentStr:'$1,580/mo',ai:8.8,img:0},
+  {id:11,cmp:'Madinaty',title:'4-Bed Family Villa',type:'Villa',beds:4,bath:4,area:280,price:9500000,priceStr:'EGP 9.5M',rentStr:'$3,100/mo',ai:9.0,img:1},
+  {id:12,cmp:'Eastown',title:'3-Bed Apartment',type:'Apartment',beds:3,bath:2,area:155,price:7200000,priceStr:'EGP 7.2M',rentStr:'$2,360/mo',ai:9.0,img:3},
+  {id:13,cmp:'Eastown',title:'4-Bed Townhouse',type:'Townhouse',beds:4,bath:4,area:265,price:14000000,priceStr:'EGP 14M',rentStr:'$4,600/mo',ai:9.1,img:4},
+  {id:14,cmp:'Villette',title:'5-Bed Private Villa',type:'Villa',beds:5,bath:5,area:380,price:31000000,priceStr:'EGP 31M',rentStr:'$10,200/mo',ai:9.3,img:5},
+  {id:15,cmp:'Palm Hills NC',title:'4-Bed Prestige Villa',type:'Villa',beds:4,bath:4,area:320,price:24000000,priceStr:'EGP 24M',rentStr:'$7,900/mo',ai:9.2,img:6},
+];
+const MAP_COMPOUNDS=[
+  {name:'Mountain View iCity',coords:[30.0120,31.5183],priceResale:'EGP 11.2M',priceRent:'$3,700/mo',ai:9.6,units:145,zone:'5th Settlement'},
+  {name:'Hyde Park',coords:[30.0083,31.5447],priceResale:'EGP 18.5M',priceRent:'$6,100/mo',ai:9.8,units:98,zone:'5th Settlement'},
+  {name:'Mivida',coords:[30.0069,31.4892],priceResale:'EGP 5.8M',priceRent:'$1,900/mo',ai:9.1,units:112,zone:'5th Settlement'},
+  {name:'Eastown',coords:[30.0181,31.4867],priceResale:'EGP 8.2M',priceRent:'$2,700/mo',ai:9.0,units:76,zone:'5th Settlement'},
+  {name:'Palm Hills NC',coords:[30.0250,31.5120],priceResale:'EGP 12.4M',priceRent:'$4,100/mo',ai:9.2,units:88,zone:'5th Settlement'},
+];
+const AI_RESP={
+  mivida:'Mivida by SODIC: 2-bed units from EGP 5.2M. Avg rental $1,700/mo. AI Score 9.1/10 — strong expat demand.',
+  hyde:'Hyde Park: villas from EGP 22M. AI Score 9.8/10 — highest YoY appreciation (+22%). 3 units available today.',
+  madinaty:'Madinaty: 3-bed from EGP 4.8M — best value per m² in New Cairo. Excellent schools nearby.',
+  invest:'Top ROI: Mountain View iCity (+24%), Uptown Cairo (+31%), Hyde Park (+22%). Strong Q2 2026 signals.',
+  rent:'Best rental: Al Rehab from $1,280/mo, Madinaty $1,480/mo. Premium: Hyde Park from $6,100/mo.',
+  default:"I'm Sierra AI — ask about any compound, ROI or budget and I'll find your perfect match in New Cairo.",
+};
+const NEARBY=['British International School Cairo','GEMS Cairo International','AUC New Cairo','Cairo Festival City Mall','Point 90 Mall'];
+
+/* ═══════════════════════════════ LOGO ═══════════════════════════════════ */
+function Logo({size=28}){
+  return (
+    <svg width={size} height={size} viewBox="0 0 60 60" fill="none" style={{display:'block', flexShrink:0}}>
+      <path d="M30 6L9 15v18c0 10 9 18 21 21c12-3 21-11 21-21V15L30 6z" fill="url(#logo-grad-client)" stroke="#C8961A" strokeWidth="2"/>
+      <path d="M30 14l12 5v14c0 7-5 13-12 15c-7-2-12-8-12-15V19l12-5z" fill="#0A1A2B" stroke="#E9C176" strokeWidth="1"/>
+      <path d="M30 19v18" stroke="#C8961A" strokeWidth="2"/>
+      <defs>
+        <linearGradient id="logo-grad-client" x1="9" y1="6" x2="51" y2="54" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#C8961A"/>
+          <stop offset="0.5" stopColor="#E9C176"/>
+          <stop offset="1" stopColor="#A07614"/>
+        </linearGradient>
+      </defs>
+    </svg>
+  );
+}
+
+/* ═════════════════════════ HEADER ══════════════════════════════════ */
+function SmartRequestPanel({selCmps,rooms,matchCount,onClose}){
+  const [done,setDone] = useState(false);
+  const [name,setName] = useState('');
+  const [wa,setWa] = useState('');
+  const submit=()=>{if(wa.trim()){setDone(true);setTimeout(onClose,2300);}};
+  return(
+    <div className="smart-panel" style={{position:'relative'}}>
+      <div className="sp-inner">
+        {done?(
+          <div style={{gridColumn:'1/-1',display:'flex',alignItems:'center',justifyContent:'center',gap:14,padding:'6px 0'}}>
+            <div style={{width:32,height:32,borderRadius:'50%',background:'rgba(52,211,153,.12)',border:'1px solid #34D399',display:'flex',alignItems:'center',justifyContent:'center',color:'#34D399',fontSize:16}}>✓</div>
+            <div>
+              <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:19,color:'var(--tx)',fontWeight:400}}>Request Sent</div>
+              <div style={{fontSize:11,color:'var(--tx-f)',marginTop:2}}>{matchCount} matched listings — we'll reach out on WhatsApp shortly</div>
+            </div>
+          </div>
+        ):(
+          <>
+            <div>
+              <div className="sp-lbl">Name <span style={{opacity:.42,fontWeight:400,textTransform:'none',letterSpacing:0,fontSize:8}}>optional</span></div>
+              <input className="sp-inp" placeholder="Your name" value={name} onChange={e=>setName(e.target.value)} onKeyDown={e=>e.key==='Enter'&&submit()}/>
+            </div>
+            <div>
+              <div className="sp-lbl">WhatsApp Number</div>
+              <input className="sp-inp" placeholder="+20 10x xxx xxxx" value={wa} onChange={e=>setWa(e.target.value)} onKeyDown={e=>e.key==='Enter'&&submit()} autoFocus/>
+            </div>
+            <button className="sp-btn" onClick={submit} style={{marginTop:18}}>
+              Search · {matchCount} {matchCount===1?'Match':'Matches'} →
+            </button>
+          </>
+        )}
+      </div>
+      <button onClick={onClose} style={{position:'absolute',top:12,right:18,background:'none',border:'none',cursor:'pointer',color:'var(--tx-f)',fontSize:22,lineHeight:1,fontFamily:'inherit',transition:'color .2s'}}>×</button>
+    </div>
+  );
+}
+
+function Header({lang,setLang,theme,setTheme,mode,setMode,selCmps,setSelCmps,rooms,setRooms}){
+  const isAr=lang==='ar';
+  const [open,setOpen]=useState(null);
+  const [cmpQ,setCmpQ]=useState('');
+  const [smartOpen,setSmartOpen]=useState(false);
+  const pillRef=useRef(null);
+  const smartRef=useRef(null);
+
+  useEffect(()=>{
+    const h=e=>{
+      if(pillRef.current&&!pillRef.current.contains(e.target))setOpen(null);
+    };
+    document.addEventListener('mousedown',h);
+    return()=>document.removeEventListener('mousedown',h);
+  },[]);
+
+  const toggleCmp=c=>setSelCmps(s=>s.includes(c)?s.filter(x=>x!==c):[...s,c]);
+  const filtCmps=useMemo(()=>ALL_COMPOUNDS.filter(c=>!cmpQ||c.toLowerCase().includes(cmpQ.toLowerCase())),[cmpQ]);
+  const cmpLbl=selCmps.length?selCmps.length+' Compound'+(selCmps.length>1?'s':''):isAr?'كل المجمعات':'All Compounds';
+  const roomLbl=rooms?rooms+' Bed'+(rooms>1?'s':''):isAr?'الغرف':'Rooms';
+  const matchCount=useMemo(()=>{
+    let r=ALL_LISTINGS;
+    if(selCmps.length)r=r.filter(l=>selCmps.includes(l.cmp));
+    if(rooms)r=r.filter(l=>l.beds===rooms);
+    return r.length;
+  },[selCmps,rooms]);
+
+  return(
+    <>
+      <header className="hdr" ref={pillRef}>
+        <a href="#" className="hdr-brand">
+          <Logo size={26}/>
+          <span className="hdr-name">Sierra Estates</span>
+        </a>
+        <div className="hdr-center">
+          <div className="hdr-pill">
+            <div className="hdr-seg">
+              {[['all','All'],['rent','Rent'],['resale','Resale']].map(([k,l])=>(
+                <button key={k} className={'hdr-mode'+(mode===k?' on':'')} onClick={()=>setMode(k)}>{l}</button>
+              ))}
+            </div>
+            <div className="hdr-dd">
+              <button className={'hdr-dd-btn'+(open==='cpd'?' open':'')} onClick={()=>{setOpen(o=>o==='cpd'?null:'cpd');setCmpQ('');}}>
+                ⊙ {cmpLbl} ▾
+              </button>
+              {open==='cpd'&&(
+                <div className="hdr-drop" style={{width:262}}>
+                  <input className="fdd-search" placeholder={isAr?'ابحث عن مجمع…':'Search compound…'} value={cmpQ} onChange={e=>setCmpQ(e.target.value)} onClick={e=>e.stopPropagation()} autoFocus/>
+                  {selCmps.length>0&&<button className="fdd-item" style={{color:'rgba(200,150,26,.75)',fontSize:10}} onClick={()=>setSelCmps([])}><span className="chk">×</span>Clear all ({selCmps.length})</button>}
+                  <div className="fdd-sep">New Cairo · {filtCmps.length} Compounds</div>
+                  {filtCmps.map(c=>(
+                    <button key={c} className={'fdd-item'+(selCmps.includes(c)?' sel':'')} onClick={()=>toggleCmp(c)}>
+                      <span className="chk">{selCmps.includes(c)?'✓':''}</span>{c}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div className="hdr-dd">
+              <button className={'hdr-dd-btn'+(open==='rooms'?' open':'')} onClick={()=>setOpen(o=>o==='rooms'?null:'rooms')}>
+                ⊟ {roomLbl} ▾
+              </button>
+              {open==='rooms'&&(
+                <div className="hdr-drop" style={{width:168}}>
+                  <button className={'fdd-item'+(!rooms?' sel':'')} onClick={()=>setRooms(null)}><span className="chk">{!rooms?'✓':''}</span>Any</button>
+                  {[1,2,3,4,5].map(r=>(
+                    <button key={r} className={'fdd-item'+(rooms===r?' sel':'')} onClick={()=>setRooms(rooms===r?null:r)}>
+                      <span className="chk">{rooms===r?'✓':''}</span>{r} Bed{r>1?'s':''}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            <button className="hdr-cta" onClick={()=>setSmartOpen(o=>!o)}>
+              {smartOpen?'↑ Close':'Search · '}{!smartOpen&&matchCount}
+            </button>
+          </div>
+        </div>
+        <div className="hdr-right">
+          <a href="#listings" className="hdr-link">Browse</a>
+          <button className="hdr-icon" title="Toggle theme" onClick={()=>setTheme(t=>t==='dark'?'light':'dark')}>{theme==='dark'?'☀':'🌙'}</button>
+          <button className="hdr-icon" title="Language" onClick={()=>setLang(l=>l==='en'?'ar':'en')}>{isAr?'EN':'ع'}</button>
+          <a href="Sierra Estates 3.0 Admin Portal.html" className="hdr-icon" style={{fontSize:11}}>⚙</a>
+        </div>
+      </header>
+      {smartOpen&&(
+        <div ref={smartRef}>
+          <SmartRequestPanel
+            selCmps={selCmps} rooms={rooms}
+            matchCount={matchCount}
+            onClose={()=>setSmartOpen(false)}/>
+        </div>
+      )}
+    </>
+  );
+}
+
+/* ═════════════════════════ HERO ════════════════════════════════════ */
+function HeroSection({lang}){
+  const isAr=lang==='ar';
+  const [scene,setScene]=useState(0);
+  const [drag,setDrag]=useState(false);
+  const pRef=useRef(null);
+  const bgRef=useRef(null);
+  const rafRef=useRef(null);
+  const lastRef=useRef(null);
+  const ms=useRef({panX:50,panY:50,driftTX:52,driftTY:48,driftT:320,isDragging:false,scrollY:0});
+
+  const applyBg=useCallback(()=>{
+    const b=bgRef.current;if(!b)return;
+    const s=ms.current;
+    b.style.backgroundPosition=`${s.panX}% ${s.panY}%`;
+    b.style.transform=`translateY(${s.scrollY*0.28}px) scale(1.0)`;
+  },[]);
+
+  useEffect(()=>{
+    const onScroll=()=>{ms.current.scrollY=window.scrollY;applyBg();};
+    window.addEventListener('scroll',onScroll,{passive:true});
+    return()=>window.removeEventListener('scroll',onScroll);
+  },[applyBg]);
+
+  useEffect(()=>{
+    const cv=pRef.current;if(!cv)return;
+    const ctx=cv.getContext('2d');
+    const resize=()=>{cv.width=cv.offsetWidth;cv.height=cv.offsetHeight;};
+    resize();window.addEventListener('resize',resize);
+    const pts=Array.from({length:60},()=>({
+      x:Math.random()*cv.width,y:Math.random()*cv.height,
+      r:Math.random()*1.3+.35,
+      vx:(Math.random()-.5)*.22,vy:-Math.random()*.32-.07,
+      op:Math.random()*.32+.07,
+    }));
+    const tick=()=>{
+      rafRef.current=requestAnimationFrame(tick);
+      ctx.clearRect(0,0,cv.width,cv.height);
+      pts.forEach(p=>{
+        p.x+=p.vx;p.y+=p.vy;
+        if(p.y<-4){p.y=cv.height+4;p.x=Math.random()*cv.width;}
+        ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+        ctx.fillStyle=`rgba(200,150,26,${p.op})`;ctx.fill();
+      });
+      const s=ms.current;
+      if(!s.isDragging){
+        s.panX+=(50-s.panX)*.0045;
+        s.panY+=(50-s.panY)*.0045;
+        applyBg();
+      }
+    };
+    tick();
+    return()=>{window.removeEventListener('resize',resize);cancelAnimationFrame(rafRef.current);};
+  },[applyBg]);
+
+  const onD=e=>{ms.current.isDragging=true;setDrag(true);lastRef.current={x:e.clientX,y:e.clientY};};
+  const onM=e=>{
+    const s=ms.current;if(!s.isDragging||!lastRef.current)return;
+    s.panX=Math.max(20,Math.min(80,s.panX-(e.clientX-lastRef.current.x)*.038));
+    s.panY=Math.max(20,Math.min(80,s.panY-(e.clientY-lastRef.current.y)*.038));
+    lastRef.current={x:e.clientX,y:e.clientY};
+    applyBg();
+  };
+  const onU=()=>{ms.current.isDragging=false;setDrag(false);};
+
+  return(
+    <section className={`hero${drag?' grabbing':''}`} onMouseDown={onD} onMouseMove={onM} onMouseUp={onU} onMouseLeave={onU}>
+      <div ref={bgRef} className="hero-bg" style={{backgroundImage:`url(${SCENES[scene].bg})`,backgroundPosition:'50% 50%',transition:'background-image .55s ease'}}/>
+      <div className="hero-vignette"/>
+      <canvas ref={pRef} className="hero-particles" style={{position:'absolute',inset:0,width:'100%',height:'100%'}}/>
+      <div className="hero-content">
+        <div className="hero-eyebrow">{isAr?'ذكاء اصطناعي · القاهرة الجديدة':'Artificial Intelligence · New Cairo'}</div>
+        <h1 className="hero-title">
+          {isAr
+            ?<>اعثر على <em>بيتك المثالي</em><br/>مدعوم بالذكاء الاصطناعي</>
+            :<>Find Your <em>Dream Home</em><br/>Driven by AI</>
+          }
+        </h1>
+        <p className="hero-sub">{isAr?'١٥ مجمعاً فاخراً · مطابقة فورية':'15 premium compounds · instant AI-powered matching'}</p>
+        <div className="hero-stats">
+          {[['15','Listings'],['5','Compounds'],['9.8','AI Score'],['24h','Response']].map(([v,l],i)=>(
+            <div key={i} className="hero-stat" style={{padding:'2px 8px'}}>
+              <div className="hero-stat-v">{v}</div>
+              <div className="hero-stat-l">{l}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="scene-thumbs">
+        {SCENES.map((s,i)=>(
+          <div key={i} className={`scene-thumb${scene===i?' active':''}`} onClick={e=>{e.stopPropagation();setScene(i);}}>
+            <img src={s.thumb} alt={s.lbl} loading="lazy"/>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+/* ── VIRTUAL TOUR ── */
+function VirtualTour({lang}){
+  const isAr=lang==='ar';
+  const containerRef=useRef(null);
+  const threeRef=useRef<any>({});
+  const stRef=useRef({lon:0,lat:0,tLon:0,tLat:0,down:false,sx:0,sy:0,pLon:0,pLat:0});
+  const rafRef=useRef<any>(null);
+  const [room,setRoom]=useState(0);
+  const [hint,setHint]=useState(true);
+  const [loading,setLoading]=useState(true);
+
+  useEffect(()=>{
+    const el=containerRef.current;if(!el||!(window as any).THREE)return;
+    const THREE = (window as any).THREE;
+    const W=el.clientWidth||window.innerWidth;
+    const H=el.clientHeight||500;
+    const renderer=new THREE.WebGLRenderer({antialias:true});
+    renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));
+    renderer.setSize(W,H);
+    renderer.domElement.style.cssText='position:absolute;inset:0;width:100%;height:100%;';
+    el.appendChild(renderer.domElement);
+    const scene=new THREE.Scene();
+    const camera=new THREE.PerspectiveCamera(75,W/H,1,2000);
+    camera.position.set(0,0,.001);
+    const geo=new THREE.SphereGeometry(500,64,40);
+    geo.scale(-1,1,1);
+    const mat=new THREE.MeshBasicMaterial({color:0x142840});
+    scene.add(new THREE.Mesh(geo,mat));
+    threeRef.current={renderer,camera,mat,THREE};
+    const loader=new THREE.TextureLoader();
+    loader.crossOrigin='anonymous';
+    loader.load(TOUR_ROOMS[0].bg,(tex: any)=>{
+      tex.minFilter=THREE.LinearFilter;tex.generateMipmaps=false;
+      mat.map=tex;mat.needsUpdate=true;setLoading(false);
+    });
+    const tick=()=>{
+      rafRef.current=requestAnimationFrame(tick);
+      const s=stRef.current;
+      s.lon+=(s.tLon-s.lon)*.082;
+      s.lat+=(s.tLat-s.lat)*.082;
+      s.lat=Math.max(-85,Math.min(85,s.lat));
+      const phi=THREE.MathUtils.degToRad(90-s.lat);
+      const theta=THREE.MathUtils.degToRad(s.lon);
+      camera.lookAt(500*Math.sin(phi)*Math.cos(theta),500*Math.cos(phi),500*Math.sin(phi)*Math.sin(theta));
+      renderer.render(scene,camera);
+    };
+    tick();
+    return()=>{cancelAnimationFrame(rafRef.current);renderer.dispose();if(el.contains(renderer.domElement))el.removeChild(renderer.domElement);};
+  },[]);
+
+  useEffect(()=>{
+    const{mat, THREE}=threeRef.current;if(!mat)return;
+    setLoading(true);stRef.current.tLon=0;stRef.current.tLat=0;
+    const loader=new THREE.TextureLoader();loader.crossOrigin='anonymous';
+    loader.load(TOUR_ROOMS[room].bg,(tex: any)=>{tex.minFilter=THREE.LinearFilter;tex.generateMipmaps=false;mat.map=tex;mat.needsUpdate=true;setLoading(false);});
+  },[room]);
+
+  const onPD=e=>{const s=stRef.current;s.down=true;s.sx=e.clientX;s.sy=e.clientY;s.pLon=s.tLon;s.pLat=s.tLat;setHint(false);};
+  const onPM=e=>{const s=stRef.current;if(!s.down)return;s.tLon=s.pLon-(e.clientX-s.sx)*.24;s.tLat=Math.max(-85,Math.min(85,s.pLat+(e.clientY-s.sy)*.24));};
+  const onPU=()=>{stRef.current.down=false;};
+
+  return(
+    <section className="tour-dark" id="tour">
+      <div style={{padding:'88px 24px 0',maxWidth:1320,margin:'0 auto'}}>
+        <div className="sec-eyebrow rv">{isAr?'الجولة الافتراضية':'Virtual Tour'}</div>
+        <div className="sec-title rv" style={{color:'#fff'}}>{isAr?'استكشف كل غرفة بحرية كاملة':'Explore Every Room in Full 360°'}</div>
+      </div>
+      <div style={{position:'relative',height:'72vh',minHeight:500,userSelect:'none',cursor:'grab'}}
+        onPointerDown={onPD} onPointerMove={onPM} onPointerUp={onPU} onPointerLeave={onPU}>
+        <div ref={containerRef} style={{position:'absolute',inset:0,overflow:'hidden'}}/>
+        {loading&&(
+          <div className="tour-loading">
+            <div className="tour-load-inner">
+              <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:28,color:'var(--gold-lt)',marginBottom:8}}>Sierra Estates</div>
+              <div className="tour-load-bar"><div className="tour-load-fill"/></div>
+            </div>
+          </div>
+        )}
+        <div className="tour-badge">
+          <div className="rname">{TOUR_ROOMS[room].name}</div>
+          <div className="rof">{room+1} / {TOUR_ROOMS.length}</div>
+        </div>
+        {hint&&<div className="tour-hint">{isAr?'اسحب في أي اتجاه للاستكشاف':'Drag in any direction to explore'}</div>}
+      </div>
+      <div className="tour-pills">
+        {TOUR_ROOMS.map((r,i)=>(
+          <button key={i} className={`tour-pill${room===i?' active':''}`} onClick={()=>setRoom(i)}>{r.name}</button>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+/* ── LISTINGS ── */
+function ListingCard({l,isRent,saved,onSave}){
+  return(
+    <div className="lc">
+      <div className="lc-img">
+        <img src={IMGS[l.img]} alt={l.title} loading="lazy"/>
+        <div className="lc-ai">▲ AI {l.ai}</div>
+        <button className={`lc-heart${saved?' saved':''}`} onClick={e=>{e.stopPropagation();onSave(l.id);}}>{saved?'♥':'♡'}</button>
+        <div className="lc-view"><span>View Property</span></div>
+      </div>
+      <div className="lc-body">
+        <div className="lc-cmp">{l.cmp}</div>
+        <div className="lc-title">{l.title}</div>
+        <div className="lc-specs">
+          <div className="lc-spec"><span className="lc-sv">{l.beds}</span><span className="lc-sl">Beds</span></div>
+          <div className="lc-spec"><span className="lc-sv">{l.area}</span><span className="lc-sl">m²</span></div>
+          <div className="lc-spec"><span className="lc-sv">{l.bath}</span><span className="lc-sl">Bath</span></div>
+        </div>
+        <div className="lc-price">{isRent?l.rentStr:l.priceStr}</div>
+      </div>
+    </div>
+  );
+}
+function ListingsSection({lang,gMode,gCmps,gRooms}){
+  const isAr=lang==='ar';
+  const [sort,setSort]=useState('ai');
+  const [saved,setSaved]=useState(new Set());
+  const isRent=gMode==='rent';
+  const items=useMemo(()=>{
+    let r=[...ALL_LISTINGS];
+    if(gCmps.length)r=r.filter(l=>gCmps.includes(l.cmp));
+    if(gRooms)r=r.filter(l=>l.beds===gRooms);
+    if(sort==='ai')r.sort((a,b)=>b.ai-a.ai);
+    return r;
+  },[gCmps,gRooms,sort]);
+  const toggleSave=id=>setSaved(s=>{const n=new Set(s);n.has(id)?n.delete(id):n.add(id);return n;});
+  return(
+    <section className="lst-bg" id="listings">
+      <div className="sec">
+        <div className="sec-eyebrow rv">{isAr?'المخزون المنسق':'AI-Curated Inventory'}</div>
+        <div className="sec-title rv">{items.length} {isAr?'عقار متاح':'Properties Available'}</div>
+        <div className="l-grid" style={{marginTop:24}}>
+          {items.map(l=><ListingCard key={l.id} l={l} isRent={isRent} saved={saved.has(l.id)} onSave={toggleSave}/>)}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ── INTELLIGENCE OS ── */
+function IntelligenceOS({lang}){
+  const isAr=lang==='ar';
+  const [msgs,setMsgs]=useState([{r:'ai',t:AI_RESP.default}]);
+  const [inp,setInp]=useState('');
+  const [typing,setTyping]=useState(false);
+  const send=t=>{
+    if(!t.trim())return;
+    setMsgs(m=>[...m,{r:'user',t}]);setInp('');setTyping(true);
+    const tl=t.toLowerCase();
+    const resp=tl.includes('mivida')?AI_RESP.mivida:tl.includes('hyde')?AI_RESP.hyde:tl.includes('invest')?AI_RESP.invest:tl.includes('rent')?AI_RESP.rent:AI_RESP.default;
+    setTimeout(()=>{setTyping(false);setMsgs(m=>[...m,{r:'ai',t:resp}]);},1100);
+  };
+  return(
+    <section className="intel-bg" id="intelligence">
+      <div className="sec">
+        <div className="sec-eyebrow rv" style={{color:'var(--gold)'}}>{isAr?'نظام الذكاء':'Intelligence OS'}</div>
+        <div className="sec-title rv" style={{color:'#fff',marginBottom:10}}>{isAr?'مستشارك الذكي يعمل الآن':'Your AI Advisor · Live Now'}</div>
+        <div className="intel-grid" style={{marginTop:24}}>
+          <div className="ic" style={{display:'flex',flexDirection:'column'}}>
+            <div className="ic-hd">
+              <span className="ic-dot"/><span className="ic-lbl">SIERRA AI CONCIERGE</span>
+            </div>
+            <div style={{flex:1,overflowY:'auto',padding:'14px 16px',display:'flex',flexDirection:'column',gap:9,minHeight:220,maxHeight:340}}>
+              {msgs.map((m,i)=>(
+                <div key={i} style={{padding:'10px 14px',borderRadius:m.r==='ai'?'4px 14px 14px 14px':'14px 4px 14px 14px',fontSize:12,lineHeight:1.62,background:m.r==='ai'?'rgba(255,255,255,.055)':'linear-gradient(135deg,var(--gold),var(--gold-lt))',color:m.r==='ai'?'rgba(255,255,255,.82)':'#07111E',alignSelf:m.r==='ai'?'flex-start':'flex-end',maxWidth:'88%'}}>
+                  {m.t}
+                </div>
+              ))}
+            </div>
+            <div className="cp-foot">
+              <input className="cp-inp" value={inp} onChange={e=>setInp(e.target.value)} onKeyDown={e=>e.key==='Enter'&&send(inp)} placeholder="Ask Sierra…"/>
+              <button className="cp-send" onClick={()=>send(inp)}>↗</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ── MAP SECTION ── */
+function MapSection({lang}){
+  const isAr=lang==='ar';
+  const mapRef=useRef(null);
+  useEffect(()=>{
+    if(!mapRef.current || !(window as any).L)return;
+    const L = (window as any).L;
+    const map=L.map(mapRef.current,{center:[30.0120,31.5183],zoom:12});
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(map);
+    MAP_COMPOUNDS.forEach(c=>{
+      L.marker(c.coords).addTo(map).bindPopup(`<b>${c.name}</b><br/>Resale: ${c.priceResale}`);
+    });
+  },[]);
+  return(
+    <section className="map-bg" id="map">
+      <div style={{padding:'88px 24px 32px',maxWidth:1320,margin:'0 auto'}}>
+        <div className="sec-eyebrow rv" style={{color:'var(--gold)'}}>{isAr?'الخريطة الذكية':'Smart Map'}</div>
+        <div className="sec-title rv" style={{color:'#fff'}}>{isAr?'مجمعات القاهرة الجديدة · حية':'New Cairo Compounds · Live'}</div>
+      </div>
+      <div style={{padding:'0 24px 88px',maxWidth:1320,margin:'0 auto'}}>
+        <div ref={mapRef} style={{height:400, borderRadius:16}}/>
+      </div>
+    </section>
+  );
+}
+
+/* ── FOOTER ──────────────────────────────────────────────────────────── */
+function Footer(){
+  return(
+    <footer className="ftr">
+      <div className="ftr-grid">
+        <div>
+          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:18,fontWeight:600,color:'var(--gold-lt)'}}>SIERRA ESTATES</div>
+          <p style={{fontSize:12,color:'rgba(255,255,255,.32)',marginTop:12}}>Intelligence OS for premium real estate across New Cairo finest compounds.</p>
+        </div>
+      </div>
+    </footer>
+  );
+}
+
+/* ── APP ── */
+function App(){
+  const [lang,setLang]=useState('en');
+  const [theme,setTheme]=useState('dark');
+  const [mode,setMode]=useState('all');
+  const [selCmps,setSelCmps]=useState([]);
+  const [rooms,setRooms]=useState(null);
+
+  useEffect(()=>{
+    document.documentElement.setAttribute('data-theme',theme);
+  },[theme]);
+
+  return(
+    <>
+      <Header lang={lang} setLang={setLang} theme={theme} setTheme={setTheme}
+        mode={mode} setMode={setMode} selCmps={selCmps} setSelCmps={setSelCmps}
+        rooms={rooms} setRooms={setRooms}/>
+      <main style={{paddingTop:56}}>
+        <HeroSection lang={lang}/>
+        <ListingsSection lang={lang} gMode={mode} gCmps={selCmps} gRooms={rooms}/>
+        <VirtualTour lang={lang}/>
+        <IntelligenceOS lang={lang}/>
+        <MapSection lang={lang}/>
+      </main>
+      <Footer/>
+    </>
+  );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+{
+  "name": "Remix: WhatsApp Campaign \u0026 Agent Productivity Manager",
+  "description": "A full-featured WhatsApp Bulk Campaign Sender, Client Agent Workflows, and Agent Productivity Analytics dashboard.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

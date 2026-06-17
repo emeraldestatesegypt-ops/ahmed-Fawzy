@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sierra Blu · Property Manager</title>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Playfair+Display:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <!-- Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: #0A1A3A;
+            font-family: 'Cairo', 'Inter', sans-serif;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: #F5F7FA;
+            border-radius: 30px;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        }
+        /* HEADER */
+        .header {
+            background: linear-gradient(145deg, #0A1A3A, #1F2C3D);
+            padding: 25px 30px;
+            text-align: center;
+            border-bottom: 3px solid #C9A24A;
+        }
+        .logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.2rem;
+            color: white;
+            letter-spacing: 2px;
+        }
+        .logo span {
+            color: #C9A24A;
+        }
+        .tagline {
+            color: #C9A24A;
+            font-size: 0.95rem;
+            margin-top: 5px;
+        }
+        /* MAIN CONTENT */
+        .content {
+            padding: 30px;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+        @media(max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            border: 1px solid #E5C687;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        .card h2 {
+            font-family: 'Playfair Display', serif;
+            color: #0A1A3A;
+            margin-bottom: 20px;
+            border-right: 3px solid #C9A24A;
+            padding-right: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .card h2 i {
+            color: #C9A24A;
+        }
+        label {
+            display: block;
+            font-weight: 600;
+            color: #0A1A3A;
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+        }
+        textarea,
+        input,
+        select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #E5C687;
+            border-radius: 12px;
+            font-size: 1rem;
+            margin-bottom: 15px;
+            font-family: 'Inter', sans-serif;
+            transition: 0.3s;
+        }
+        textarea:focus,
+        input:focus,
+        select:focus {
+            border-color: #C9A24A;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(201, 162, 74, 0.15);
+        }
+        .btn {
+            background: #0A1A3A;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 30px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1rem;
+        }
+        .btn:hover {
+            background: #C9A24A;
+            color: #0A1A3A;
+            transform: translateY(-2px);
+        }
+        .btn-gold {
+            background: #C9A24A;
+            color: #0A1A3A;
+        }
+        .btn-gold:hover {
+            background: #E5C687;
+        }
+        .btn-block {
+            width: 100%;
+            justify-content: center;
+        }
+        .result-box {
+            background: #F5F7FA;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 15px;
+        }
+        .code-display {
+            background: #0A1A3A;
+            color: #C9A24A;
+            padding: 18px;
+            border-radius: 10px;
+            text-align: center;
+            font-family: 'Courier New', monospace;
+            font-size: 1.8rem;
+            border: 2px solid #C9A24A;
+            margin: 10px 0;
+            direction: ltr;
+            letter-spacing: 2px;
+        }
+        .preview-box {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            white-space: pre-wrap;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            border: 1px solid #E5C687;
+            margin: 10px 0;
+            max-height: 250px;
+            overflow-y: auto;
+        }
+        .image-preview {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 10px 0;
+        }
+        .image-preview img {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 10px;
+            border: 2px solid #E5C687;
+        }
+        .error {
+            background: #ffebee;
+            color: #d32f2f;
+            padding: 12px 15px;
+            border-radius: 10px;
+            display: none;
+            align-items: center;
+            gap: 10px;
+            border-right: 4px solid #d32f2f;
+            margin: 10px 0;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 12px 15px;
+            border-radius: 10px;
+            display: none;
+            align-items: center;
+            gap: 10px;
+            border-right: 4px solid #28a745;
+            margin: 10px 0;
+        }
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+        .btn-group .btn {
+            flex: 1;
+            min-width: 120px;
+            justify-content: center;
+        }
+        .footer {
+            background: white;
+            padding: 20px;
+            text-align: center;
+            border-top: 2px solid #E5C687;
+        }
+        .footer .brand {
+            font-family: 'Playfair Display', serif;
+            color: #0A1A3A;
+            font-size: 1.1rem;
+        }
+        .loader {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        .loader i {
+            font-size: 2rem;
+            color: #C9A24A;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+        .action-buttons .btn {
+            flex: 1;
+            justify-content: center;
+        }
+        /* Offer Image Preview */
+        .offer-preview {
+            background: #1a1a2e;
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 10px 0;
+            font-family: 'Playfair Display', serif;
+            text-align: center;
+        }
+        .offer-preview .offer-title {
+            font-size: 2rem;
+            color: #C9A24A;
+            letter-spacing: 2px;
+        }
+        .offer-preview .offer-sub {
+            font-size: 1.2rem;
+            opacity: 0.8;
+        }
+        .offer-preview .offer-price {
+            font-size: 1.8rem;
+            color: #C9A24A;
+        }
+        .offer-preview .offer-logo {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+        .offer-preview .offer-logo span {
+            color: #C9A24A;
+        }
+        /* RTL Fix */
+        input,
+        textarea {
+            direction: rtl;
+        }
+        .ltr {
+            direction: ltr;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- HEADER -->
+        <div class="header">
+            <div class="logo">✦ <span>SIERRA BLU</span> ✦</div>
+            <div class="tagline">Beyond Brokerage | AI-Powered Real Estate Intelligence</div>
+        </div>
+
+        <!-- MAIN CONTENT -->
+        <div class="content">
+
+            <!-- LOADER -->
+            <div class="loader" id="loader"><i class="fas fa-spinner"></i> Processing...</div>
+
+            <!-- ERROR / SUCCESS -->
+            <div class="error" id="errorMsg"><i class="fas fa-exclamation-triangle"></i> <span id="errorText"></span></div>
+            <div class="success" id="successMsg"><i class="fas fa-check-circle"></i> <span id="successText"></span></div>
+
+            <!-- GRID -->
+            <div class="grid">
+
+                <!-- LEFT: INPUT -->
+                <div class="card">
+                    <h2><i class="fas fa-pen-alt"></i> Add Property</h2>
+
+                    <label>📝 Property Description (Arabic/English)</label>
+                    <textarea id="propertyDesc" rows="5" placeholder="Example: شفة في ميفيدا 3 غرف مفروش 10 مليون جاردن">شقة في ميفيدا 3 غرف مفروش 10 مليون</textarea>
+
+                    <label>📞 Phone Number</label>
+                    <input type="tel" id="phoneInput" placeholder="01092048333" value="01092048333" />
+
+                    <label>🖼️ Upload Images</label>
+                    <input type="file" id="imageUpload" multiple accept="image/*" onchange="previewImages()" />
+
+                    <div id="imagePreview" class="image-preview"></div>
+
+                    <button class="btn btn-block" onclick="generateAndSave()">
+                        <i class="fas fa-bolt"></i> Generate Code & Content
+                    </button>
+                </div>
+
+                <!-- RIGHT: OUTPUT -->
+                <div class="card">
+                    <h2><i class="fas fa-file-alt"></i> Results</h2>
+
+                    <!-- Code -->
+                    <div class="result-box">
+                        <h4 style="display:flex;align-items:center;gap:8px;color:#0A1A3A;">
+                            <i class="fas fa-code" style="color:#C9A24A;"></i> Property Code
+                        </h4>
+                        <div id="codeDisplay" class="code-display">-</div>
+                        <div class="btn-group">
+                            <button class="btn btn-gold" onclick="copyCode()"><i class="fas fa-copy"></i> Copy</button>
+                            <button class="btn btn-gold" onclick="downloadCode()"><i class="fas fa-download"></i> Download</button>
+                        </div>
+                    </div>
+
+                    <!-- WhatsApp -->
+                    <div class="result-box">
+                        <h4 style="display:flex;align-items:center;gap:8px;color:#0A1A3A;">
+                            <i class="fab fa-whatsapp" style="color:#25D366;"></i> WhatsApp
+                        </h4>
+                        <div id="whatsappContent" class="preview-box"></div>
+                        <button class="btn btn-gold" onclick="copyContent('whatsappContent')"><i class="fas fa-copy"></i> Copy</button>
+                    </div>
+
+                    <!-- Facebook -->
+                    <div class="result-box">
+                        <h4 style="display:flex;align-items:center;gap:8px;color:#0A1A3A;">
+                            <i class="fab fa-facebook" style="color:#1877F2;"></i> Facebook
+                        </h4>
+                        <div id="facebookContent" class="preview-box"></div>
+                        <button class="btn btn-gold" onclick="copyContent('facebookContent')"><i class="fas fa-copy"></i> Copy</button>
+                    </div>
+
+                    <!-- Property Finder -->
+                    <div class="result-box">
+                        <h4 style="display:flex;align-items:center;gap:8px;color:#0A1A3A;">
+                            <i class="fas fa-building" style="color:#C9A24A;"></i> Property Finder
+                        </h4>
+                        <div id="pfTitle" style="font-weight:bold;margin:5px 0;"></div>
+                        <div id="pfContent" class="preview-box"></div>
+                        <button class="btn btn-gold" onclick="copyContent('pfContent')"><i class="fas fa-copy"></i> Copy</button>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="action-buttons">
+                        <button class="btn" onclick="generateOfferImage()"><i class="fas fa-image"></i> Offer Image</button>
+                        <button class="btn" onclick="generatePDF()"><i class="fas fa-file-pdf"></i> PDF Brochure</button>
+                        <button class="btn" onclick="saveToFirebase()"><i class="fas fa-database"></i> Save to Firebase</button>
+                    </div>
+
+                    <!-- Offer Image Preview -->
+                    <div id="offerPreview" class="offer-preview" style="display:none;">
+                        <div class="offer-logo">✦ <span>SIERRA BLU</span> ✦</div>
+                        <div class="offer-title" id="offerTitle">READY TO MOVE IN!</div>
+                        <div class="offer-sub" id="offerCompound">📍 Mivida</div>
+                        <div id="offerDetails" style="margin:10px 0;">🛏️ 3 Bedrooms | 🛋️ Fully Furnished</div>
+                        <div class="offer-price" id="offerPrice">💰 10,000,000 EGP</div>
+                        <div style="margin-top:10px;font-size:0.8rem;opacity:0.7;">Sierra Blu Realty · Beyond Brokerage</div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- FOOTER -->
+        <div class="footer">
+            <div class="brand">✦ Sierra Blu Realty ✦</div>
+            <div style="font-size:0.8rem;color:#666;">Beyond Brokerage | info@sierra-blu-realty.com | 01092048333</div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================================
+        // 1. COMPOUND DICTIONARY
+        // ============================================================
+        const compoundCodes = {
+            'ميفيدا': 'MI',
+            'mivida': 'MI',
+            'ماونتن فيو': 'MV',
+            'mountain view': 'MV',
+            'هايد بارك': 'HP',
+            'hyde park': 'HP',
+            'ليك فيو': 'LV',
+            'lake view': 'LV',
+            'كايرو فيستيفال': 'CFC',
+            'cairo festival': 'CFC',
+            'فيليت': 'VS',
+            'villette': 'VS',
+            'جاردينيا': 'GC',
+            'gardenia': 'GC',
+            'الرحاب': 'RH',
+            'rehab': 'RH',
+            'الشروق': 'ES',
+            'el shorouk': 'ES'
+        };
+
+        // ============================================================
+        // 2. EXTRACTION FUNCTIONS
+        // ============================================================
+        function extractCompound(text) {
+            text = text.toLowerCase();
+            for (let [name, code] of Object.entries(compoundCodes)) {
+                if (text.includes(name.toLowerCase())) {
+                    return { name: name, code: code };
+                }
+            }
+            // Fallback: first two letters of first word
+            let words = text.split(' ').filter(w => w.length > 0);
+            if (words.length > 0) {
+                let fallback = words[0].substring(0, 2).toUpperCase();
+                return { name: words[0], code: fallback };
+            }
+            return null;
+        }
+
+        function extractNumber(text, keywords) {
+            let patterns = [
+                new RegExp(`(\\d+)\\s*(${keywords.join('|')})`, 'i'),
+                new RegExp(`(${keywords.join('|')})\\s*(\\d+)`, 'i'),
+                /(\d+)/i
+            ];
+            for (let pattern of patterns) {
+                let match = text.match(pattern);
+                if (match) return parseInt(match[1] || match[2]);
+            }
+            return null;
+        }
+
+        function extractBedrooms(text) {
+            // Check for "استوديو" or "studio"
+            if (text.includes('استوديو') || text.includes('studio')) return 1;
+            // Check for "غرفتين" etc.
+            let words = ['غرف', 'bedrooms', 'bedroom', 'br', 'غرفة', 'room'];
+            let num = extractNumber(text, words);
+            if (num) return num;
+            // Check for Arabic words
+            if (text.includes('غرفتين')) return 2;
+            if (text.includes('ثلاث')) return 3;
+            if (text.includes('أربع')) return 4;
+            return null;
+        }
+
+        function extractBathrooms(text) {
+            let words = ['حمام', 'bathrooms', 'bathroom', 'bath'];
+            return extractNumber(text, words);
+        }
+
+        function extractArea(text) {
+            let match = text.match(/(\d+)\s*(متر|sqm|m²|m)/i);
+            return match ? parseInt(match[1]) : null;
+        }
+
+        function extractFurnished(text) {
+            if (text.includes('مفروش') || text.includes('furnished')) return 'F';
+            if (text.includes('نصف') || text.includes('semi')) return 'S';
+            if (text.includes('مطبخ') || text.includes('kitchen')) return 'K';
+            if (text.includes('غير مفروش') || text.includes('unfurnished')) return 'U';
+            return null;
+        }
+
+        function extractPrice(text) {
+            // Arabic numbers
+            let arabicToEnglish = { '٠': '0', '١': '1', '٢': '2', '٣': '3', '٤': '4', '٥': '5', '٦': '6', '٧': '7', '٨': '8',
+                '٩': '9' };
+            let cleaned = text;
+            for (let [a, e] of Object.entries(arabicToEnglish)) {
+                cleaned = cleaned.replace(new RegExp(a, 'g'), e);
+            }
+            let match = cleaned.match(/(\d+[.,]?\d*)\s*(مليون|م|million)?\s*(الف|k|ألف)?/i);
+            if (!match) return null;
+            let value = parseFloat(match[1].replace(',', ''));
+            if (match[2] && (match[2].includes('مليون') || match[2].includes('million'))) value *= 1000000;
+            else if (match[3] && (match[3].includes('الف') || match[3].includes('k') || match[3].includes('ألف'))) value *=
+                1000;
+            let currency = 'EGP';
+            if (text.includes('$') || text.includes('dollar') || text.includes('usd')) currency = 'USD';
+            if (text.includes('درهم') || text.includes('aed')) currency = 'AED';
+            return { value, currency };
+        }
+
+        // ============================================================
+        // 3. CODE GENERATION
+        // ============================================================
+        function formatPriceForCode(price, currency) {
+            if (currency === 'USD') {
+                if (price >= 1000000) return '$' + (price / 1000000).toFixed(1).replace('.0', '') + 'M';
+                if (price >= 1000) return '$' + Math.round(price / 1000) + 'K';
+                return '$' + price;
+            } else if (currency === 'AED') {
+                if (price >= 1000000) return (price / 1000000).toFixed(1).replace('.0', '') + 'M' + ' AED';
+                if (price >= 1000) return Math.round(price / 1000) + 'K' + ' AED';
+                return price + ' AED';
+            } else {
+                if (price >= 1000000) return Math.round(price / 1000000) + 'M';
+                if (price >= 1000) return Math.round(price / 1000) + 'K';
+                return price.toString();
+            }
+        }
+
+        function generateCode(compound, bedrooms, furnished, price, currency) {
+            if (!compound || !bedrooms || !furnished || !price) return null;
+            let priceCode = formatPriceForCode(price, currency);
+            return `${compound.code}-${bedrooms}${furnished}-${priceCode}`;
+        }
+
+        // ============================================================
+        // 4. CONTENT GENERATION
+        // ============================================================
+        function getFurnishedText(code) {
+            const map = { 'F': 'Fully Furnished', 'S': 'Semi-Furnished', 'K': 'Kitchen Only', 'U': 'Unfurnished' };
+            return map[code] || 'Unfurnished';
+        }
+
+        function generateWhatsApp(compound, bedrooms, bathrooms, area, price, currency, furnished, phone, code) {
+            const furnText = getFurnishedText(furnished);
+            const priceDisplay = formatPriceForCode(price, currency);
+            const areaText = area ? `${area} sqm` : '';
+            const bathText = bathrooms ? `${bathrooms} Bathrooms` : '';
+            const typeText = bedrooms === 1 ? 'studio (one bedroom)' : `${bedrooms} bedrooms`;
+
+            return `Code : ${code}
+
+${compound.name} 📍
+
+For rent
+- ${typeText}
+${areaText ? `- Area: ${areaText}` : ''}
+${bathText ? `- ${bathText}` : ''}
+- ${furnText}
+- price: ${priceDisplay}
+- for more details
+
+Sierra-Blu-Realty
+${phone}`;
+        }
+
+        function generateFacebook(compound, bedrooms, area, price, currency, furnished, phone) {
+            const furnText = getFurnishedText(furnished);
+            const priceDisplay = formatPriceForCode(price, currency);
+            const typeText = bedrooms === 1 ? 'استوديو' : `${bedrooms} غرف`;
+
+            return `🏢 ${typeText} فاخر للإيجار في ${compound.name}
+📍 ${compound.name} – New Cairo
+🛏️ ${typeText}
+🛋️ ${furnText}
+${area ? `📐 ${area} متر مربع` : ''}
+💰 ${priceDisplay}
+
+📞 ${phone}
+سييرا بلو العقارية – Beyond Brokerage ✦
+
+#${compound.name} #${typeText == 'استوديو' ? 'استوديو_للإيجار' : 'شقق_للإيجار'} #NewCairo`;
+        }
+
+        function generatePropertyFinder(compound, bedrooms, price, currency, furnished, phone) {
+            const priceDisplay = formatPriceForCode(price, currency);
+            const typeText = bedrooms === 1 ? 'استوديو' : `${bedrooms} غرف`;
+            const title = `${typeText} فاخر للإيجار في ${compound.name}`.substring(0, 50);
+            const content =
+                `${typeText} فاخر للإيجار في ${compound.name}، أحد أرقى كمباوندات القاهرة الجديدة. يتميز العقار بمساحة ممتازة، ${bedrooms} غرف نوم، ${getFurnishedText(furnished)}، وسعر مميز ${priceDisplay}. للاستفسار: ${phone}. سييرا بلو – شريكك الموثوق.`;
+            return { title, content };
+        }
+
+        // ============================================================
+        // 5. MAIN PROCESSING FUNCTION
+        // ============================================================
+        let currentData = {};
+
+        function generateAndSave() {
+            const text = document.getElementById('propertyDesc').value;
+            const phone = document.getElementById('phoneInput').value;
+
+            // Show loader
+            document.getElementById('loader').style.display = 'block';
+            hideMessages();
+
+            // Extract data
+            const compound = extractCompound(text);
+            const bedrooms = extractBedrooms(text);
+            const bathrooms = extractBathrooms(text);
+            const area = extractArea(text);
+            const furnished = extractFurnished(text);
+            const priceObj = extractPrice(text);
+
+            // Validate required fields
+            const missing = [];
+            if (!compound) missing.push('Compound (الكمبوند)');
+            if (!bedrooms) missing.push('Bedrooms (عدد الغرف)');
+            if (!priceObj) missing.push('Price (السعر)');
+            if (!furnished) missing.push('Furnished status (حالة الفرش)');
+
+            if (missing.length > 0) {
+                showError(`⚠️ Missing required data: ${missing.join(', ')}. Please complete.`);
+                document.getElementById('loader').style.display = 'none';
+                return;
+            }
+
+            // Generate code
+            const code = generateCode(compound, bedrooms, furnished, priceObj.value, priceObj.currency);
+            if (!code) {
+                showError('⚠️ Failed to generate code. Please check your input.');
+                document.getElementById('loader').style.display = 'none';
+                return;
+            }
+
+            // Store data for later use (images, etc.)
+            currentData = {
+                compound,
+                bedrooms,
+                bathrooms,
+                area,
+                furnished,
+                price: priceObj,
+                phone,
+                code,
+                rawText: text,
+                images: []
+            };
+
+            // Generate content
+            const whatsapp = generateWhatsApp(
+                compound, bedrooms, bathrooms, area,
+                priceObj.value, priceObj.currency, furnished, phone, code
+            );
+            const facebook = generateFacebook(
+                compound, bedrooms, area,
+                priceObj.value, priceObj.currency, furnished, phone
+            );
+            const pf = generatePropertyFinder(
+                compound, bedrooms, priceObj.value, priceObj.currency, furnished, phone
+            );
+
+            // Display results
+            document.getElementById('codeDisplay').innerText = code;
+            document.getElementById('whatsappContent').innerText = whatsapp;
+            document.getElementById('facebookContent').innerText = facebook;
+            document.getElementById('pfTitle').innerText = pf.title;
+            document.getElementById('pfContent').innerText = pf.content;
+
+            // Update offer preview
+            updateOfferPreview(compound, bedrooms, area, priceObj.value, priceObj.currency, furnished);
+
+            document.getElementById('loader').style.display = 'none';
+            showSuccess('✅ Code & content generated successfully!');
+        }
+
+        // ============================================================
+        // 6. IMAGE PREVIEW
+        // ============================================================
+        let uploadedImages = [];
+
+        function previewImages() {
+            const files = document.getElementById('imageUpload').files;
+            const preview = document.getElementById('imagePreview');
+            preview.innerHTML = '';
+            uploadedImages = [];
+
+            for (let i = 0; i < files.length; i++) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    uploadedImages.push(e.target.result);
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    preview.appendChild(img);
+                };
+                reader.readAsDataURL(files[i]);
+            }
+        }
+
+        // ============================================================
+        // 7. OFFER IMAGE GENERATION
+        // ============================================================
+        function updateOfferPreview(compound, bedrooms, area, price, currency, furnished) {
+            const preview = document.getElementById('offerPreview');
+            document.getElementById('offerTitle').innerText = 'READY TO MOVE IN!';
+            document.getElementById('offerCompound').innerText = `📍 ${compound.name}`;
+            document.getElementById('offerDetails').innerHTML =
+                `🛏️ ${bedrooms} Bedrooms | 🛋️ ${getFurnishedText(furnished)}${area ? ` | 📐 ${area} sqm` : ''}`;
+            document.getElementById('offerPrice').innerHTML = `💰 ${formatPriceForCode(price, currency)}`;
+            preview.style.display = 'block';
+        }
+
+        function generateOfferImage() {
+            const preview = document.getElementById('offerPreview');
+            if (preview.style.display === 'none') {
+                showError('⚠️ Please generate content first.');
+                return;
+            }
+            html2canvas(preview).then(canvas => {
+                const link = document.createElement('a');
+                link.download = 'sierra-blu-offer.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+                showSuccess('✅ Offer image downloaded!');
+            });
+        }
+
+        // ============================================================
+        // 8. PDF BROCHURE GENERATION
+        // ============================================================
+        function generatePDF() {
+            const code = document.getElementById('codeDisplay').innerText;
+            if (code === '-' || !currentData.code) {
+                showError('⚠️ Please generate content first.');
+                return;
+            }
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('p', 'mm', 'a4');
+            const d = currentData;
+
+            // Title
+            doc.setFontSize(22);
+            doc.setTextColor('#0A1A3A');
+            doc.text('✦ SIERRA BLU ✦', 105, 20, { align: 'center' });
+
+            // Property Code
+            doc.setFontSize(16);
+            doc.setTextColor('#C9A24A');
+            doc.text(`Code: ${d.code}`, 20, 40);
+
+            // Details
+            doc.setFontSize(14);
+            doc.setTextColor('#333');
+            let y = 55;
+            const lines = [
+                `Compound: ${d.compound.name}`,
+                `Bedrooms: ${d.bedrooms}`,
+                d.bathrooms ? `Bathrooms: ${d.bathrooms}` : '',
+                d.area ? `Area: ${d.area} sqm` : '',
+                `Furnished: ${getFurnishedText(d.furnished)}`,
+                `Price: ${formatPriceForCode(d.price.value, d.price.currency)}`,
+                `Phone: ${d.phone}`,
+                '',
+                'Sierra Blu Realty - Beyond Brokerage'
+            ];
+            for (let line of lines) {
+                if (line) {
+                    doc.text(line, 20, y);
+                    y += 10;
+                }
+            }
+
+            // Footer
+            doc.setFontSize(10);
+            doc.setTextColor('#999');
+            doc.text('© Sierra Blu Realty | info@sierra-blu-realty.com', 105, 280, { align: 'center' });
+
+            doc.save('sierra-blu-brochure.pdf');
+            showSuccess('✅ PDF brochure downloaded!');
+        }
+
+        // ============================================================
+        // 9. FIREBASE SAVE (Mock for demo)
+        // ============================================================
+        function saveToFirebase() {
+            if (!currentData.code) {
+                showError('⚠️ Please generate content first.');
+                return;
+            }
+
+            const property = {
+                code: currentData.code,
+                compound: currentData.compound.name,
+                compoundCode: currentData.compound.code,
+                bedrooms: currentData.bedrooms,
+                bathrooms: currentData.bathrooms,
+                area: currentData.area,
+                price: currentData.price.value,
+                currency: currentData.price.currency,
+                furnished: currentData.furnished,
+                phone: currentData.phone,
+                images: uploadedImages,
+                whatsappContent: document.getElementById('whatsappContent').innerText,
+                facebookContent: document.getElementById('facebookContent').innerText,
+                propertyFinderTitle: document.getElementById('pfTitle').innerText,
+                propertyFinderContent: document.getElementById('pfContent').innerText,
+                createdAt: new Date().toISOString()
+            };
+
+            console.log('Saving to Firebase:', property);
+
+            showSuccess('✅ Property saved to Firebase (mock)! Check console for data.');
+        }
+
+        // ============================================================
+        // 10. COPY & DOWNLOAD HELPERS
+        // ============================================================
+        function copyContent(elementId) {
+            const text = document.getElementById(elementId).innerText;
+            if (text) {
+                navigator.clipboard.writeText(text);
+                showSuccess('✅ Copied to clipboard!');
+            }
+        }
+
+        function copyCode() {
+            const code = document.getElementById('codeDisplay').innerText;
+            if (code && code !== '-') {
+                navigator.clipboard.writeText(code);
+                showSuccess('✅ Code copied!');
+            }
+        }
+
+        // File download helper
+        function downloadCode() {
+            const code = document.getElementById('codeDisplay').innerText;
+            if (code && code !== '-') {
+                const blob = new Blob([code], { type: 'text/plain' });
+                const link = document.createElement('a');
+                link.download = 'property-code.txt';
+                link.href = URL.createObjectURL(blob);
+                link.click();
+                showSuccess('✅ Code downloaded!');
+            }
+        }
+
+        // ============================================================
+        // 11. UI HELPERS
+        // ============================================================
+        function hideMessages() {
+            document.getElementById('errorMsg').style.display = 'none';
+            document.getElementById('successMsg').style.display = 'none';
+        }
+
+        function showError(msg) {
+            document.getElementById('errorText').innerText = msg;
+            document.getElementById('errorMsg').style.display = 'flex';
+            setTimeout(() => { document.getElementById('errorMsg').style.display = 'none'; }, 6000);
+        }
+
+        function showSuccess(msg) {
+            document.getElementById('successText').innerText = msg;
+            document.getElementById('successMsg').style.display = 'flex';
+            setTimeout(() => { document.getElementById('successMsg').style.display = 'none'; }, 4000);
+        }
+    </script>
+</body>
+</html>

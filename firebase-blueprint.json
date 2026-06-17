@@ -1,0 +1,83 @@
+{
+  "entities": {
+    "Agent": {
+      "title": "Agent",
+      "description": "Dynamic workspace agent and their associated response statistics.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "avatar": { "type": "string" },
+        "role": { "type": "string" },
+        "status": { "type": "string", "enum": ["active", "away", "offline"] },
+        "leads": { "type": "integer" },
+        "responseTime": { "type": "integer" },
+        "conversionRate": { "type": "integer" },
+        "activeChats": { "type": "integer" }
+      },
+      "required": ["id", "name", "email", "status"]
+    },
+    "Client": {
+      "title": "Client",
+      "description": "Company client profiles containing operational routing workflows.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "domain": { "type": "string" },
+        "logo": { "type": "string" }
+      },
+      "required": ["id", "name", "domain"]
+    },
+    "PropertyClientRecord": {
+      "title": "PropertyClientRecord",
+      "description": "Real estate buyer lead profiles synchronized from WhatsApp.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "phone": { "type": "string" },
+        "propertyInterest": { "type": "string" },
+        "status": { "type": "string" },
+        "lastActivity": { "type": "string" },
+        "assignedAgent": { "type": "string" },
+        "notes": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["id", "name", "phone", "status"]
+    },
+    "SyncLog": {
+      "title": "SyncLog",
+      "description": "Activity logs detailing auto-mapping matches between WhatsApp and Firestore.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "timestamp": { "type": "string" },
+        "phone": { "type": "string" },
+        "name": { "type": "string" },
+        "status": { "type": "string" },
+        "details": { "type": "string" }
+      },
+      "required": ["id", "timestamp", "phone", "name", "status"]
+    }
+  },
+  "firestore": {
+    "/agents/{agentId}": {
+      "schema": "Agent",
+      "description": "Agents roster and response performance metrics."
+    },
+    "/clients/{clientId}": {
+      "schema": "Client",
+      "description": "Registered company clients."
+    },
+    "/property_clients/{pcId}": {
+      "schema": "PropertyClientRecord",
+      "description": "Captured property inquiry leads."
+    },
+    "/sync_logs/{logId}": {
+      "schema": "SyncLog",
+      "description": "Audit trails for incoming WhatsApp leads mapping."
+    }
+  }
+}

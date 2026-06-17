@@ -1,0 +1,68 @@
+@import "tailwindcss";
+
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Inter:wght@300;400;500;600;700&family=Cairo:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+@theme {
+  --font-sans: "Inter", "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Cormorant Garamond", serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  /* Premium gold and deep slate-navy theme matching Sierra Estates */
+  --color-slate-950: #07111E; /* Page Deep Background (Dark Theme) */
+  --color-slate-900: #0B1A2E; /* Sidebar Background */
+  --color-slate-850: #0F2035; /* Card Background / Raised container */
+  --color-slate-805: #152C48;
+  --color-slate-800: rgba(255, 255, 255, 0.08); /* Default subtle borders */
+  --color-slate-755: rgba(255, 255, 255, 0.15);
+  --color-slate-700: rgba(255, 255, 255, 0.15); /* Dividers */
+  --color-slate-650: rgba(240, 237, 229, 0.32);
+  --color-slate-600: rgba(240, 237, 229, 0.58); /* Secondary text */
+  --color-slate-550: rgba(240, 237, 229, 0.58);
+  --color-slate-500: rgba(240, 237, 229, 0.58);
+  --color-slate-450: rgba(240, 237, 229, 0.58);
+  --color-slate-400: #F0EDE5; /* Main light text */
+  --color-slate-350: #ffffff;
+  --color-slate-300: #ffffff;
+  --color-slate-250: #ffffff;
+  --color-slate-200: #ffffff;
+  --color-slate-150: #ffffff;
+  --color-slate-100: #ffffff; /* Active white text */
+  --color-slate-50: #ffffff;
+
+  --color-indigo-950: #0d1b2a;
+  --color-indigo-900: #1b263b;
+}
+
+/* Global resets for the luxury dark real estate brand theme */
+html, body {
+  background-color: #07111E !important;
+  color: #F0EDE5 !important;
+  font-family: "Inter", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+input, textarea, select {
+  background-color: #0F2035 !important;
+  color: #ffffff !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+input:focus, textarea:focus, select:focus {
+  border-color: #C8961A !important;
+}
+
+/* Custom scrollbars with luxury gold accent style matching Sierra Estates */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #07111E;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(200, 150, 26, 0.25);
+  border-radius: 99px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(200, 150, 26, 0.5);
+}
