@@ -43,6 +43,7 @@ jobs:
           fi
 
       - name: Deploy to Firebase Hosting (Admin Site)
+        if: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_SIERRA_BLU != '' && secrets.FIREBASE_PROJECT_ID != '' }}
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
@@ -51,6 +52,10 @@ jobs:
           projectId: '${{ secrets.FIREBASE_PROJECT_ID }}'
         env:
           FIREBASE_CLI_PREVIEWS: hostingchannels
+
+      - name: Skip Admin deploy when Firebase secrets are missing
+        if: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_SIERRA_BLU == '' || secrets.FIREBASE_PROJECT_ID == '' }}
+        run: echo "Skipping Admin deploy because FIREBASE_SERVICE_ACCOUNT_SIERRA_BLU or FIREBASE_PROJECT_ID is not configured."
 
   build_and_deploy_client:
     name: Build & Deploy Client Site
@@ -84,6 +89,7 @@ jobs:
           fi
 
       - name: Deploy to Firebase Hosting (Client Site)
+        if: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_SIERRA_BLU != '' && secrets.FIREBASE_PROJECT_ID != '' }}
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
@@ -92,3 +98,7 @@ jobs:
           projectId: '${{ secrets.FIREBASE_PROJECT_ID }}'
         env:
           FIREBASE_CLI_PREVIEWS: hostingchannels
+
+      - name: Skip Client deploy when Firebase secrets are missing
+        if: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_SIERRA_BLU == '' || secrets.FIREBASE_PROJECT_ID == '' }}
+        run: echo "Skipping Client deploy because FIREBASE_SERVICE_ACCOUNT_SIERRA_BLU or FIREBASE_PROJECT_ID is not configured."
